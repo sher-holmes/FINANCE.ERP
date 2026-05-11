@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ERP">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<title>ERP 管理系統</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#efefed;
+  --txt:#1a1a1a;--txt2:#6b7280;--txt3:#9ca3af;
+  --bdr:rgba(0,0,0,0.12);--bdr2:rgba(0,0,0,0.2);
+  --info-bg:#e6f1fb;--info-txt:#185fa5;
+  --warn-bg:#faeeda;--warn-txt:#854f0b;
+  --err-bg:#fcebeb;--err-txt:#a32d2d;
+  --ok-bg:#eaf3de;--ok-txt:#3b6d11;
+  --purple-bg:#eeedfe;--purple-txt:#3c3489;
+  --rad:8px;--rad-lg:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+  --txt:#f2f2f7;--txt2:#8e8e93;--txt3:#636366;
+  --bdr:rgba(255,255,255,0.12);--bdr2:rgba(255,255,255,0.2);
+  --info-bg:#0c2d4a;--info-txt:#85b7eb;
+  --warn-bg:#3d2800;--warn-txt:#fac775;
+  --err-bg:#3d0f0f;--err-txt:#f09595;
+  --ok-bg:#1a3008;--ok-txt:#97c459;
+  --purple-bg:#1e1a40;--purple-txt:#afa9ec;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:80px;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;}
+.topbar h1{font-size:17px;font-weight:600;}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--bdr);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;cursor:pointer;border:none;background:none;color:var(--txt2);font-size:10px;gap:3px;transition:color 0.15s;}
+.nav-item.active{color:var(--txt);}
+.nav-item i{font-size:22px;}
+.content{padding:16px;}
+.sec{display:none;}.sec.on{display:block;}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mc{background:var(--bg2);border-radius:var(--rad);padding:12px 14px;}
+.mc-lbl{font-size:11px;color:var(--txt2);margin-bottom:4px;}
+.mc-val{font-size:22px;font-weight:600;}
+.mc-sub{font-size:11px;margin-top:3px;}
+.cg{color:#3b6d11;}@media(prefers-color-scheme:dark){.cg{color:#97c459;}}
+.cr{color:#a32d2d;}@media(prefers-color-scheme:dark){.cr{color:#f09595;}}
+.ca{color:#854f0b;}@media(prefers-color-scheme:dark){.ca{color:#fac775;}}
+.cb{color:#185fa5;}@media(prefers-color-scheme:dark){.cb{color:#85b7eb;}}
+.panel{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rad-lg);padding:14px;margin-bottom:14px;}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.panel-title{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
+.bg{background:var(--ok-bg);color:var(--ok-txt);}
+.ba{background:var(--warn-bg);color:var(--warn-txt);}
+.br{background:var(--err-bg);color:var(--err-txt);}
+.bb{background:var(--info-bg);color:var(--info-txt);}
+.bp{background:var(--purple-bg);color:var(--purple-txt);}
+.card{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rad-lg);padding:14px;margin-bottom:10px;}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.card-name{font-size:14px;font-weight:500;}
+.card-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.card-body{border-top:0.5px solid var(--bdr);padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;}
+.card-row{display:flex;flex-direction:column;gap:2px;}
+.card-lbl{font-size:10px;color:var(--txt2);}
+.card-val{font-size:12px;font-weight:500;}
+.card-full{grid-column:1/-1;}
+.mono{font-family:ui-monospace,monospace;letter-spacing:.03em;}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.acts{display:flex;gap:6px;align-items:center;}
+.ibt{border:none;background:var(--bg2);cursor:pointer;color:var(--txt2);padding:6px 8px;border-radius:var(--rad);font-size:15px;border:0.5px solid var(--bdr);}
+.ibt:active{opacity:0.6;}
+.ibt.del:active{background:var(--err-bg);color:var(--err-txt);}
+.ibt.edit:active{background:var(--info-bg);color:var(--info-txt);}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--bdr);}
+.list-row:last-child{border-bottom:none;}
+.list-left{flex:1;min-width:0;}
+.list-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.list-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.list-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:10px;}
+.list-amt{font-size:14px;font-weight:600;}
+.search-bar{display:flex;gap:8px;margin-bottom:14px;align-items:center;}
+.search-bar input{flex:1;font-size:14px;padding:9px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}
+.search-bar select{font-size:13px;padding:9px 8px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}
+.btn-add{width:36px;height:36px;border-radius:50%;background:var(--txt);color:var(--bg);border:none;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+.btn-add:active{opacity:0.7;}
+.empty{text-align:center;padding:32px 0;color:var(--txt2);font-size:14px;}
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--rad);background:var(--warn-bg);margin-bottom:8px;}
+.alert-txt{font-size:12px;color:var(--warn-txt);flex:1;}
+.bar-bg{background:var(--bdr);border-radius:3px;height:5px;width:60px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:4px;}
+.bar-fill{height:5px;border-radius:3px;}
+.section-hd{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.divider{border:none;border-top:0.5px solid var(--bdr);margin:14px 0;}
+.due-box{margin-top:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--rad);display:flex;align-items:center;gap:8px;}
+.due-lbl{font-size:11px;color:var(--txt2);}
+.due-val{font-size:15px;font-weight:600;margin-top:2px;}
+/* Modal sheet */
+.sheet-wrap{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);align-items:flex-end;}
+.sheet-wrap.open{display:flex;}
+.sheet{background:var(--bg);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:90vh;overflow-y:auto;}
+.sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sheet-hd h2{font-size:17px;font-weight:600;}
+.close-btn{border:none;background:var(--bg2);color:var(--txt2);width:30px;height:30px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.form-group{margin-bottom:14px;}
+.form-group label{font-size:12px;color:var(--txt2);display:block;margin-bottom:5px;}
+.form-group input,.form-group select{width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-full{width:100%;padding:14px;border-radius:var(--rad);font-size:15px;font-weight:600;cursor:pointer;border:none;margin-top:4px;}
+.btn-primary{background:var(--txt);color:var(--bg);}
+.btn-secondary{background:var(--bg2);color:var(--txt);margin-bottom:8px;}
+.btn-full:active{opacity:0.7;}
+/* Tabler icons */
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css');
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1 id="page-title">總覽</h1>
+  <div style="display:flex;gap:8px;">
+    <button class="ibt" onclick="exportCSV()" title="匯出 CSV" style="font-size:13px;padding:5px 10px;">
+      <i class="ti ti-download" style="vertical-align:-2px;"></i> 匯出
+    </button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 總覽 -->
+  <div id="dash" class="sec on">
+    <div class="metrics">
+      <div class="mc"><div class="mc-lbl">供應商數</div><div class="mc-val" id="d-supp">0</div></div>
+      <div class="mc"><div class="mc-lbl">應收待收</div><div class="mc-val" id="d-ar">$0</div><div class="mc-sub ca">待追蹤</div></div>
+      <div class="mc"><div class="mc-lbl">原料預警</div><div class="mc-val cr" id="d-raw-low">0</div><div class="mc-sub cr">需補貨</div></div>
+      <div class="mc"><div class="mc-lbl">成品預警</div><div class="mc-val cr" id="d-fg-low">0</div><div class="mc-sub cr">需補貨</div></div>
+    </div>
+    <div class="panel">
+      <div class="section-hd">庫存預警</div>
+      <div id="dash-alerts"></div>
+    </div>
+    <div class="panel">
+      <div class="section-hd">近期應收</div>
+      <div id="dash-ar"></div>
+    </div>
+    <div class="panel">
+      <div class="section-hd">近期應付</div>
+      <div id="dash-ap"></div>
+    </div>
+  </div>
+
+  <!-- 供應商 -->
+  <div id="supp" class="sec">
+    <div class="metrics">
+      <div class="mc"><div class="mc-lbl">供應商總數</div><div class="mc-val" id="supp-total">0</div></div>
+      <div class="mc"><div class="mc-lbl">逾期供應商</div><div class="mc-val cr" id="supp-overdue">0</div><div class="mc-sub cr">需付款</div></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="supp-s" placeholder="搜尋供應商..." oninput="renderSupp()">
+      <button class="btn-add" onclick="openSuppModal(null)" aria-label="新增">+</button>
+    </div>
+    <div id="supp-list"></div>
+  </div>
+
+  <!-- 應收 -->
+  <div id="ar" class="sec">
+    <div class="metrics">
+      <div class="mc"><div class="mc-lbl">應收總額</div><div class="mc-val" id="ar-tot">$0</div></div>
+      <div class="mc"><div class="mc-lbl">收款率</div><div class="mc-val cg" id="ar-rate">0%</div></div>
+      <div class="mc"><div class="mc-lbl">待收款</div><div class="mc-val" id="ar-pend">$0</div><div class="mc-sub ca">追蹤中</div></div>
+      <div class="mc"><div class="mc-lbl">逾期</div><div class="mc-val cr" id="ar-over">$0</div></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="ar-s" placeholder="搜尋客戶..." oninput="renderAR()">
+      <select id="ar-f" onchange="renderAR()" style="width:90px;"><option value="">全部</option><option>待收款</option><option>已收款</option><option>逾期</option></select>
+      <button class="btn-add" onclick="showM('arm')" aria-label="新增">+</button>
+    </div>
+    <div id="ar-list"></div>
+  </div>
+
+  <!-- 應付 -->
+  <div id="ap" class="sec">
+    <div class="metrics">
+      <div class="mc"><div class="mc-lbl">應付總額</div><div class="mc-val" id="ap-tot">$0</div></div>
+      <div class="mc"><div class="mc-lbl">付款率</div><div class="mc-val cg" id="ap-rate">0%</div></div>
+      <div class="mc"><div class="mc-lbl">待付款</div><div class="mc-val" id="ap-pend">$0</div><div class="mc-sub ca">安排中</div></div>
+      <div class="mc"><div class="mc-lbl">逾期</div><div class="mc-val cr" id="ap-over">$0</div></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="ap-s" placeholder="搜尋供應商..." oninput="renderAP()">
+      <select id="ap-f" onchange="renderAP()" style="width:90px;"><option value="">全部</option><option>待付款</option><option>已付款</option><option>逾期</option></select>
+      <button class="btn-add" onclick="showM('apm')" aria-label="新增">+</button>
+    </div>
+    <div id="ap-list"></div>
+  </div>
+
+  <!-- 庫存 -->
+  <div id="inv" class="sec">
+    <div class="metrics">
+      <div class="mc"><div class="mc-lbl">原料品項</div><div class="mc-val" id="inv-rsku">0</div></div>
+      <div class="mc"><div class="mc-lbl">原料庫存值</div><div class="mc-val" id="inv-rval">$0</div></div>
+      <div class="mc"><div class="mc-lbl">成品品項</div><div class="mc-val" id="inv-fsku">0</div></div>
+      <div class="mc"><div class="mc-lbl">成品庫存值</div><div class="mc-val" id="inv-fval">$0</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="ti ti-package" style="color:#854f0b;"></i> 原料庫存 <span class="badge ba" id="raw-wb" style="display:none;"></span></div>
+        <div class="acts">
+          <select id="raw-f" onchange="renderRAW()" style="font-size:12px;padding:5px 6px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);"><option value="">全部</option><option value="正常">正常</option><option value="低庫存">低庫存</option><option value="缺貨">缺貨</option></select>
+          <button class="btn-add" onclick="showM('rawm')" aria-label="新增原料" style="width:30px;height:30px;font-size:18px;">+</button>
+        </div>
+      </div>
+      <input type="text" id="raw-s" placeholder="搜尋原料..." oninput="renderRAW()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);margin-bottom:12px;">
+      <div id="raw-list"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><i class="ti ti-box" style="color:#3b6d11;"></i> 成品庫存 <span class="badge br" id="fg-wb" style="display:none;"></span></div>
+        <div class="acts">
+          <select id="fg-f" onchange="renderFG()" style="font-size:12px;padding:5px 6px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);"><option value="">全部</option><option value="正常">正常</option><option value="低庫存">低庫存</option><option value="缺貨">缺貨</option></select>
+          <button class="btn-add" onclick="showM('fgm')" aria-label="新增成品" style="width:30px;height:30px;font-size:18px;">+</button>
+        </div>
+      </div>
+      <input type="text" id="fg-s" placeholder="搜尋成品..." oninput="renderFG()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);margin-bottom:12px;">
+      <div id="fg-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部導覽 -->
+<nav class="nav-bottom">
+  <button class="nav-item active" onclick="go('dash')" id="nav-dash"><i class="ti ti-layout-dashboard"></i>總覽</button>
+  <button class="nav-item" onclick="go('supp')" id="nav-supp"><i class="ti ti-truck"></i>供應商</button>
+  <button class="nav-item" onclick="go('ar')" id="nav-ar"><i class="ti ti-arrow-bar-down"></i>應收</button>
+  <button class="nav-item" onclick="go('ap')" id="nav-ap"><i class="ti ti-arrow-bar-up"></i>應付</button>
+  <button class="nav-item" onclick="go('inv')" id="nav-inv"><i class="ti ti-box"></i>庫存</button>
+</nav>
+
+<!-- 供應商 Modal -->
+<div class="sheet-wrap" id="suppm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2 id="suppm-title">新增供應商</h2><button class="close-btn" onclick="hideM('suppm')">✕</button></div>
+    <div class="form-group"><label>公司名稱</label><input type="text" id="s-name"></div>
+    <div class="form-row">
+      <div class="form-group"><label>銀行名稱</label><input type="text" id="s-bank"></div>
+      <div class="form-group"><label>分行</label><input type="text" id="s-branch"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>銀行代號</label><input type="text" id="s-code"></div>
+      <div class="form-group"><label>銀行帳號</label><input type="text" id="s-acct"></div>
+    </div>
+    <div class="form-group"><label>帳號名稱</label><input type="text" id="s-acct-name"></div>
+    <button class="btn-full btn-primary" onclick="saveSupp()">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('suppm')">取消</button>
+  </div>
+</div>
+
+<!-- 應收 Modal -->
+<div class="sheet-wrap" id="arm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>新增應收帳款</h2><button class="close-btn" onclick="hideM('arm')">✕</button></div>
+    <div class="form-group"><label>客戶名稱</label><input type="text" id="ar-cl"></div>
+    <div class="form-row">
+      <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ar-am"></div>
+      <div class="form-group"><label>狀態</label><select id="ar-st"><option>待收款</option><option>已收款</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>發票日期</label><input type="date" id="ar-id" oninput="updateArPrev()"></div>
+      <div class="form-group"><label>收款天數</label><select id="ar-terms" onchange="updateArPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
+    <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ar-prev">—</div></div></div>
+    <button class="btn-full btn-primary" onclick="addAR()" style="margin-top:14px;">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('arm')">取消</button>
+  </div>
+</div>
+
+<!-- 應付 Modal -->
+<div class="sheet-wrap" id="apm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>新增應付帳款</h2><button class="close-btn" onclick="hideM('apm')">✕</button></div>
+    <div class="form-group"><label>供應商名稱</label><input type="text" id="ap-vn"></div>
+    <div class="form-row">
+      <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ap-am"></div>
+      <div class="form-group"><label>狀態</label><select id="ap-st"><option>待付款</option><option>已付款</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>收票日期</label><input type="date" id="ap-id" oninput="updateApPrev()"></div>
+      <div class="form-group"><label>付款天數</label><select id="ap-terms" onchange="updateApPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
+    <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ap-prev">—</div></div></div>
+    <button class="btn-full btn-primary" onclick="addAP()" style="margin-top:14px;">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('apm')">取消</button>
+  </div>
+</div>
+
+<!-- 原料 Modal -->
+<div class="sheet-wrap" id="rawm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>新增原料</h2><button class="close-btn" onclick="hideM('rawm')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>品名</label><input type="text" id="raw-nm"></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="raw-sk"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>單位</label><input type="text" id="raw-sp" placeholder="pcs/kg/m"></div>
+      <div class="form-group"><label>單價</label><input type="number" id="raw-pr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>庫存量</label><input type="number" id="raw-qt"></div>
+      <div class="form-group"><label>安全庫存量</label><input type="number" id="raw-sf"></div>
+    </div>
+    <button class="btn-full btn-primary" onclick="addRAW()">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('rawm')">取消</button>
+  </div>
+</div>
+
+<!-- 成品 Modal -->
+<div class="sheet-wrap" id="fgm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>新增成品</h2><button class="close-btn" onclick="hideM('fgm')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>品名</label><input type="text" id="fg-nm"></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="fg-sk"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>型號</label><input type="text" id="fg-sp"></div>
+      <div class="form-group"><label>單價</label><input type="number" id="fg-pr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>庫存量</label><input type="number" id="fg-qt"></div>
+      <div class="form-group"><label>安全庫存量</label><input type="number" id="fg-sf"></div>
+    </div>
+    <button class="btn-full btn-primary" onclick="addFG()">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('fgm')">取消</button>
+  </div>
+</div>
+
+<script>
+const fmt=n=>'$'+Math.round(n).toLocaleString('zh-TW');
+const fmtN=n=>Math.round(n).toLocaleString('zh-TW');
+function invSt(r){if(r.qty===0)return'缺貨';if(r.qty<r.safe)return'低庫存';return'正常';}
+function bdg(s){
+  if(s==='已收款'||s==='已付款'||s==='正常')return`<span class="badge bg">${s}</span>`;
+  if(s==='待收款'||s==='待付款')return`<span class="badge bb">${s}</span>`;
+  if(s==='逾期'||s==='缺貨')return`<span class="badge br">${s}</span>`;
+  if(s==='低庫存')return`<span class="badge ba">${s}</span>`;
+  return`<span class="badge bp">${s}</span>`;
+}
+function bar(qty,safe){
+  const max=Math.max(qty,safe*1.4,1);
+  const pct=Math.min(Math.round(qty/max*100),100);
+  const col=qty===0?'#e24b4a':qty<safe?'#ef9f27':'#639922';
+  return`<div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col};"></div></div>`;
+}
+function calcDue25(d,days){
+  if(!d)return'—';
+  const dt=new Date(d);dt.setDate(dt.getDate()+parseInt(days));
+  return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-25`;
+}
+function updateArPrev(){document.getElementById('ar-prev').textContent=calcDue25(document.getElementById('ar-id').value,document.getElementById('ar-terms').value)||'請先選擇日期';}
+function updateApPrev(){document.getElementById('ap-prev').textContent=calcDue25(document.getElementById('ap-id').value,document.getElementById('ap-terms').value)||'請先選擇日期';}
+
+function initials(name){return name.replace(/[（(【\s]/g,' ').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
+const avColors=[['#e6f1fb','#185fa5'],['#e1f5ee','#0f6e56'],['#eeedfe','#534ab7'],['#faeeda','#854f0b'],['#fcebeb','#a32d2d']];
+function avColor(id){const i=parseInt(id.replace(/\D/g,''))%avColors.length;return avColors[i];}
+
+// Data with localStorage persistence
+function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch{return def;}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch{}}
+
+let suppData=load('erp_supp',[
+  {id:'S-001',name:'聯華電子材料',bank:'台灣銀行',branch:'忠孝分行',code:'004',acct:'012-345678900',acctName:'聯華電子材料股份有限公司'},
+  {id:'S-002',name:'台積化工供應商',bank:'第一銀行',branch:'松山分行',code:'007',acct:'031-098765400',acctName:'台積化工供應商有限公司'},
+  {id:'S-003',name:'萬海物流服務',bank:'國泰世華銀行',branch:'信義分行',code:'013',acct:'008-112233445',acctName:'萬海物流服務股份有限公司'},
+]);
+let arData=load('erp_ar',[
+  {id:'AR-001',name:'台灣科技股份有限公司',invDate:'2025-03-01',dueDate:'2025-04-25',terms:30,amount:285000,status:'已收款'},
+  {id:'AR-002',name:'新光實業有限公司',invDate:'2025-03-15',dueDate:'2025-04-25',terms:30,amount:152000,status:'待收款'},
+  {id:'AR-003',name:'遠東商貿集團',invDate:'2025-03-20',dueDate:'2025-05-25',terms:60,amount:98500,status:'逾期'},
+  {id:'AR-004',name:'中華數位科技',invDate:'2025-04-01',dueDate:'2025-07-25',terms:90,amount:340000,status:'待收款'},
+  {id:'AR-005',name:'亞太資訊服務',invDate:'2025-02-15',dueDate:'2025-03-25',terms:30,amount:67000,status:'逾期'},
+]);
+let apData=load('erp_ap',[
+  {id:'AP-001',name:'聯華電子材料',invDate:'2025-03-05',dueDate:'2025-04-25',terms:30,amount:420000,status:'已付款'},
+  {id:'AP-002',name:'台積化工供應商',invDate:'2025-03-18',dueDate:'2025-05-25',terms:60,amount:185000,status:'待付款'},
+  {id:'AP-003',name:'萬海物流服務',invDate:'2025-03-22',dueDate:'2025-04-25',terms:30,amount:53000,status:'逾期'},
+  {id:'AP-004',name:'佳世達科技零件',invDate:'2025-04-02',dueDate:'2025-07-25',terms:90,amount:298000,status:'待付款'},
+  {id:'AP-005',name:'南亞塑膠原料',invDate:'2025-04-05',dueDate:'2025-06-25',terms:60,amount:167000,status:'待付款'},
+]);
+let rawData=load('erp_raw',[
+  {sku:'RAW-001',name:'不鏽鋼螺絲 M6',spec:'pcs',qty:1200,safe:500,price:2.5},
+  {sku:'RAW-002',name:'PCB 基板 FR4',spec:'pcs',qty:85,safe:200,price:320},
+  {sku:'RAW-003',name:'鋁合金外殼 Type-B',spec:'pcs',qty:0,safe:100,price:580},
+  {sku:'RAW-004',name:'矽鋼片 0.5mm',spec:'kg',qty:340,safe:150,price:45},
+  {sku:'RAW-005',name:'銅線 AWG22',spec:'m',qty:62,safe:200,price:12},
+]);
+let fgData=load('erp_fg',[
+  {sku:'FG-001',name:'工業控制器 A5',spec:'A5-Pro',qty:210,safe:80,price:12500},
+  {sku:'FG-002',name:'感測器模組 T3',spec:'T3-Slim',qty:15,safe:60,price:3800},
+  {sku:'FG-003',name:'馬達驅動器 24V',spec:'MD-24',qty:0,safe:30,price:6200},
+  {sku:'FG-004',name:'電源供應器 150W',spec:'PS-150',qty:88,safe:50,price:2100},
+  {sku:'FG-005',name:'HMI 觸控面板 7"',spec:'HMI-7',qty:22,safe:40,price:8900},
+]);
+let seqs=load('erp_seqs',{ar:6,ap:6,raw:6,fg:6,supp:4});
+
+function saveAll(){
+  save('erp_supp',suppData);save('erp_ar',arData);save('erp_ap',apData);
+  save('erp_raw',rawData);save('erp_fg',fgData);save('erp_seqs',seqs);
+}
+
+let editingSuppId=null;
+
+function renderSupp(){
+  const s=document.getElementById('supp-s').value.toLowerCase();
+  const rows=suppData.filter(r=>!s||(r.name+r.acct+r.bank).toLowerCase().includes(s));
+  const el=document.getElementById('supp-list');
+  if(!rows.length){el.innerHTML='<div class="empty">無符合供應商</div>';return;}
+  el.innerHTML=rows.map(r=>{
+    const [bg,fg]=avColor(r.id);
+    const hasAP=apData.some(a=>a.name===r.name);
+    const overdue=apData.some(a=>a.name===r.name&&a.status==='逾期');
+    return`<div class="card">
+      <div class="card-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar" style="background:${bg};color:${fg};">${initials(r.name)}</div>
+          <div><div class="card-name">${r.name}</div><div class="card-sub">${r.id}</div></div>
+        </div>
+        <div class="acts">
+          ${overdue?'<span class="badge br">逾期</span>':hasAP?'<span class="badge bb">有應付</span>':''}
+          <button class="ibt edit" onclick="openSuppModal('${r.id}')"><i class="ti ti-edit"></i></button>
+          <button class="ibt del" onclick="delSupp('${r.id}')"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-row"><div class="card-lbl">銀行</div><div class="card-val">${r.bank}</div></div>
+        <div class="card-row"><div class="card-lbl">分行</div><div class="card-val">${r.branch}</div></div>
+        <div class="card-row"><div class="card-lbl">銀行代號</div><div class="card-val mono">${r.code}</div></div>
+        <div class="card-row"><div class="card-lbl">帳號</div><div class="card-val mono">${r.acct}</div></div>
+        <div class="card-row card-full"><div class="card-lbl">帳號名稱</div><div class="card-val">${r.acctName}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('supp-total').textContent=suppData.length;
+  document.getElementById('supp-overdue').textContent=suppData.filter(r=>apData.some(a=>a.name===r.name&&a.status==='逾期')).length;
+  updateDash();
+}
+
+function renderAR(){
+  const s=document.getElementById('ar-s').value.toLowerCase();
+  const f=document.getElementById('ar-f').value;
+  const rows=arData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
+  const el=document.getElementById('ar-list');
+  if(!rows.length){el.innerHTML='<div class="empty">無符合資料</div>';return;}
+  el.innerHTML=rows.map(r=>`<div class="list-row">
+    <div class="list-left">
+      <div class="list-name">${r.name}</div>
+      <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+    </div>
+    <div class="list-right">
+      <div class="list-amt">${fmt(r.amount)}</div>
+      ${bdg(r.status)}
+      <div class="acts" style="margin-top:2px;">
+        <button class="ibt" onclick="markAR('${r.id}')" style="font-size:13px;padding:4px 6px;"><i class="ti ti-check"></i></button>
+        <button class="ibt del" onclick="delAR('${r.id}')" style="font-size:13px;padding:4px 6px;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+  </div>`).join('');
+  const tot=arData.reduce((a,r)=>a+r.amount,0),paid=arData.filter(r=>r.status==='已收款').reduce((a,r)=>a+r.amount,0);
+  document.getElementById('ar-tot').textContent=fmt(tot);
+  document.getElementById('ar-pend').textContent=fmt(arData.filter(r=>r.status==='待收款').reduce((a,r)=>a+r.amount,0));
+  document.getElementById('ar-over').textContent=fmt(arData.filter(r=>r.status==='逾期').reduce((a,r)=>a+r.amount,0));
+  document.getElementById('ar-rate').textContent=(tot>0?Math.round(paid/tot*100):0)+'%';
+  updateDash();
+}
+
+function renderAP(){
+  const s=document.getElementById('ap-s').value.toLowerCase();
+  const f=document.getElementById('ap-f').value;
+  const rows=apData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
+  const el=document.getElementById('ap-list');
+  if(!rows.length){el.innerHTML='<div class="empty">無符合資料</div>';return;}
+  el.innerHTML=rows.map(r=>`<div class="list-row">
+    <div class="list-left">
+      <div class="list-name">${r.name}</div>
+      <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+    </div>
+    <div class="list-right">
+      <div class="list-amt">${fmt(r.amount)}</div>
+      ${bdg(r.status)}
+      <div class="acts" style="margin-top:2px;">
+        <button class="ibt" onclick="markAP('${r.id}')" style="font-size:13px;padding:4px 6px;"><i class="ti ti-check"></i></button>
+        <button class="ibt del" onclick="delAP('${r.id}')" style="font-size:13px;padding:4px 6px;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+  </div>`).join('');
+  const tot=apData.reduce((a,r)=>a+r.amount,0),paid=apData.filter(r=>r.status==='已付款').reduce((a,r)=>a+r.amount,0);
+  document.getElementById('ap-tot').textContent=fmt(tot);
+  document.getElementById('ap-pend').textContent=fmt(apData.filter(r=>r.status==='待付款').reduce((a,r)=>a+r.amount,0));
+  document.getElementById('ap-over').textContent=fmt(apData.filter(r=>r.status==='逾期').reduce((a,r)=>a+r.amount,0));
+  document.getElementById('ap-rate').textContent=(tot>0?Math.round(paid/tot*100):0)+'%';
+  updateDash();
+}
+
+function renderRAW(){
+  const s=document.getElementById('raw-s').value.toLowerCase();
+  const f=document.getElementById('raw-f').value;
+  const rows=rawData.filter(r=>(!s||(r.name+r.sku).toLowerCase().includes(s))&&(!f||invSt(r)===f));
+  const el=document.getElementById('raw-list');
+  if(!rows.length){el.innerHTML='<div class="empty">無符合項目</div>';return;}
+  el.innerHTML=rows.map(r=>`<div class="list-row">
+    <div class="list-left">
+      <div class="list-name">${r.name}</div>
+      <div class="list-sub mono" style="font-size:11px;">${r.sku} · ${fmtN(r.qty)} ${r.spec} / 安全 ${fmtN(r.safe)}</div>
+      <div style="margin-top:4px;">${bar(r.qty,r.safe)}${bdg(invSt(r))}</div>
+    </div>
+    <div class="list-right">
+      <div style="font-size:13px;font-weight:500;">${fmt(r.price)}</div>
+      <div class="acts" style="margin-top:4px;">
+        <button class="ibt" onclick="restockRAW('${r.sku}')" style="font-size:12px;padding:4px 6px;" title="+10"><i class="ti ti-plus"></i></button>
+        <button class="ibt del" onclick="delRAW('${r.sku}')" style="font-size:12px;padding:4px 6px;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+  </div>`).join('');
+  const val=rawData.reduce((a,r)=>a+r.qty*r.price,0);
+  const lc=rawData.filter(r=>invSt(r)!=='正常').length;
+  document.getElementById('inv-rsku').textContent=rawData.length;
+  document.getElementById('inv-rval').textContent=fmt(val);
+  const wb=document.getElementById('raw-wb');
+  wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';
+  updateDash();
+}
+
+function renderFG(){
+  const s=document.getElementById('fg-s').value.toLowerCase();
+  const f=document.getElementById('fg-f').value;
+  const rows=fgData.filter(r=>(!s||(r.name+r.sku).toLowerCase().includes(s))&&(!f||invSt(r)===f));
+  const el=document.getElementById('fg-list');
+  if(!rows.length){el.innerHTML='<div class="empty">無符合項目</div>';return;}
+  el.innerHTML=rows.map(r=>`<div class="list-row">
+    <div class="list-left">
+      <div class="list-name">${r.name}</div>
+      <div class="list-sub mono" style="font-size:11px;">${r.sku} · ${fmtN(r.qty)} ${r.spec} / 安全 ${fmtN(r.safe)}</div>
+      <div style="margin-top:4px;">${bar(r.qty,r.safe)}${bdg(invSt(r))}</div>
+    </div>
+    <div class="list-right">
+      <div style="font-size:13px;font-weight:500;">${fmt(r.price)}</div>
+      <div class="acts" style="margin-top:4px;">
+        <button class="ibt" onclick="restockFG('${r.sku}')" style="font-size:12px;padding:4px 6px;" title="+10"><i class="ti ti-plus"></i></button>
+        <button class="ibt del" onclick="delFG('${r.sku}')" style="font-size:12px;padding:4px 6px;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+  </div>`).join('');
+  const val=fgData.reduce((a,r)=>a+r.qty*r.price,0);
+  const lc=fgData.filter(r=>invSt(r)!=='正常').length;
+  document.getElementById('inv-fsku').textContent=fgData.length;
+  document.getElementById('inv-fval').textContent=fmt(val);
+  const wb=document.getElementById('fg-wb');
+  wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';
+  updateDash();
+}
+
+function updateDash(){
+  const arP=arData.filter(r=>r.status!=='已收款').reduce((a,r)=>a+r.amount,0);
+  const rl=rawData.filter(r=>invSt(r)!=='正常');
+  const fl=fgData.filter(r=>invSt(r)!=='正常');
+  document.getElementById('d-supp').textContent=suppData.length;
+  document.getElementById('d-ar').textContent=fmt(arP);
+  document.getElementById('d-raw-low').textContent=rl.length;
+  document.getElementById('d-fg-low').textContent=fl.length;
+  const all=[...rl.map(r=>({...r,type:'原料'})),...fl.map(r=>({...r,type:'成品'}))];
+  document.getElementById('dash-alerts').innerHTML=all.length===0
+    ?'<div style="font-size:13px;color:var(--txt2);">目前無庫存預警</div>'
+    :all.map(r=>`<div class="alert-row">
+      <i class="ti ti-alert-triangle" style="font-size:16px;color:var(--warn-txt);flex-shrink:0;margin-top:1px;"></i>
+      <div class="alert-txt"><strong>[${r.type}]</strong> ${r.name}<br>庫存 ${fmtN(r.qty)} / 安全量 ${fmtN(r.safe)}（${invSt(r)}）</div>
+    </div>`).join('');
+  document.getElementById('dash-ar').innerHTML=arData.slice(-3).reverse().map(r=>`<div class="list-row">
+    <div class="list-left"><div class="list-name">${r.name}</div><div class="list-sub">到期 ${r.dueDate}</div></div>
+    <div class="list-right"><div class="list-amt">${fmt(r.amount)}</div>${bdg(r.status)}</div>
+  </div>`).join('');
+  document.getElementById('dash-ap').innerHTML=apData.slice(-3).reverse().map(r=>`<div class="list-row">
+    <div class="list-left"><div class="list-name">${r.name}</div><div class="list-sub">到期 ${r.dueDate}</div></div>
+    <div class="list-right"><div class="list-amt">${fmt(r.amount)}</div>${bdg(r.status)}</div>
+  </div>`).join('');
+}
+
+const pageTitles={dash:'總覽',supp:'供應商資料',ar:'應收帳款',ap:'應付帳款',inv:'庫存管理'};
+function go(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('on');
+  document.getElementById('nav-'+id).classList.add('active');
+  document.getElementById('page-title').textContent=pageTitles[id];
+}
+function showM(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function hideM(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+
+function openSuppModal(id){
+  editingSuppId=id;
+  if(id){
+    const r=suppData.find(s=>s.id===id);
+    document.getElementById('suppm-title').textContent='編輯供應商';
+    document.getElementById('s-name').value=r.name;
+    document.getElementById('s-bank').value=r.bank;
+    document.getElementById('s-branch').value=r.branch;
+    document.getElementById('s-code').value=r.code;
+    document.getElementById('s-acct').value=r.acct;
+    document.getElementById('s-acct-name').value=r.acctName;
+  } else {
+    document.getElementById('suppm-title').textContent='新增供應商';
+    ['s-name','s-bank','s-branch','s-code','s-acct','s-acct-name'].forEach(i=>document.getElementById(i).value='');
+  }
+  showM('suppm');
+}
+function saveSupp(){
+  const name=document.getElementById('s-name').value.trim();if(!name)return;
+  const data={name,bank:document.getElementById('s-bank').value.trim(),branch:document.getElementById('s-branch').value.trim(),code:document.getElementById('s-code').value.trim(),acct:document.getElementById('s-acct').value.trim(),acctName:document.getElementById('s-acct-name').value.trim()||name};
+  if(editingSuppId){const idx=suppData.findIndex(s=>s.id===editingSuppId);if(idx>-1)suppData[idx]={...suppData[idx],...data};}
+  else suppData.push({id:`S-00${seqs.supp++}`,...data});
+  saveAll();hideM('suppm');renderSupp();
+}
+function delSupp(id){suppData=suppData.filter(r=>r.id!==id);saveAll();renderSupp();}
+
+function markAR(id){const r=arData.find(r=>r.id===id);if(r)r.status='已收款';saveAll();renderAR();}
+function delAR(id){arData=arData.filter(r=>r.id!==id);saveAll();renderAR();}
+function markAP(id){const r=apData.find(r=>r.id===id);if(r)r.status='已付款';saveAll();renderAP();}
+function delAP(id){apData=apData.filter(r=>r.id!==id);saveAll();renderAP();}
+function restockRAW(sku){const r=rawData.find(r=>r.sku===sku);if(r){r.qty+=10;saveAll();renderRAW();}}
+function delRAW(sku){rawData=rawData.filter(r=>r.sku!==sku);saveAll();renderRAW();}
+function restockFG(sku){const r=fgData.find(r=>r.sku===sku);if(r){r.qty+=10;saveAll();renderFG();}}
+function delFG(sku){fgData=fgData.filter(r=>r.sku!==sku);saveAll();renderFG();}
+
+function addAR(){
+  const cl=document.getElementById('ar-cl').value.trim(),am=parseFloat(document.getElementById('ar-am').value)||0;
+  if(!cl||!am)return;
+  const invDate=document.getElementById('ar-id').value||'—';
+  const terms=parseInt(document.getElementById('ar-terms').value);
+  arData.push({id:`AR-00${seqs.ar++}`,name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value});
+  saveAll();hideM('arm');renderAR();
+}
+function addAP(){
+  const vn=document.getElementById('ap-vn').value.trim(),am=parseFloat(document.getElementById('ap-am').value)||0;
+  if(!vn||!am)return;
+  const invDate=document.getElementById('ap-id').value||'—';
+  const terms=parseInt(document.getElementById('ap-terms').value);
+  apData.push({id:`AP-00${seqs.ap++}`,name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value});
+  saveAll();hideM('apm');renderAP();
+}
+function addRAW(){
+  const nm=document.getElementById('raw-nm').value.trim();if(!nm)return;
+  rawData.push({sku:document.getElementById('raw-sk').value.trim()||`RAW-00${seqs.raw}`,name:nm,spec:document.getElementById('raw-sp').value||'pcs',qty:parseInt(document.getElementById('raw-qt').value)||0,safe:parseInt(document.getElementById('raw-sf').value)||0,price:parseFloat(document.getElementById('raw-pr').value)||0});
+  seqs.raw++;saveAll();hideM('rawm');renderRAW();
+}
+function addFG(){
+  const nm=document.getElementById('fg-nm').value.trim();if(!nm)return;
+  fgData.push({sku:document.getElementById('fg-sk').value.trim()||`FG-00${seqs.fg}`,name:nm,spec:document.getElementById('fg-sp').value||'',qty:parseInt(document.getElementById('fg-qt').value)||0,safe:parseInt(document.getElementById('fg-sf').value)||0,price:parseFloat(document.getElementById('fg-pr').value)||0});
+  seqs.fg++;saveAll();hideM('fgm');renderFG();
+}
+
+function exportCSV(){
+  const sheets=[
+    {name:'應收帳款',headers:['單號','客戶','發票日','天數','到期日','金額','狀態'],rows:arData.map(r=>[r.id,r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
+    {name:'應付帳款',headers:['單號','供應商','收票日','天數','到期日','金額','狀態'],rows:apData.map(r=>[r.id,r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
+    {name:'供應商',headers:['編號','公司名稱','銀行','分行','代號','帳號','帳號名稱'],rows:suppData.map(r=>[r.id,r.name,r.bank,r.branch,r.code,r.acct,r.acctName])},
+    {name:'原料庫存',headers:['SKU','品名','單位','庫存量','安全量','單價','狀態'],rows:rawData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
+    {name:'成品庫存',headers:['SKU','品名','規格','庫存量','安全量','單價','狀態'],rows:fgData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
+  ];
+  const csv=sheets.map(s=>`=== ${s.name} ===\n`+[s.headers,...s.rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')).join('\n\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='ERP_匯出.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// 點擊背景關閉 modal
+document.querySelectorAll('.sheet-wrap').forEach(w=>{
+  w.addEventListener('click',e=>{if(e.target===w)hideM(w.id);});
+});
+
+// PWA
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js');
+}
+
+renderSupp();renderAR();renderAP();renderRAW();renderFG();
+</script>
+</body>
+</html>
