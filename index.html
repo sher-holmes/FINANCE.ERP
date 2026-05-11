@@ -117,9 +117,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 .btn-secondary{background:var(--bg2);color:var(--txt);margin-bottom:8px;}
 .btn-full:active{opacity:0.7;}
 
-.confirm-wrap{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:24px;}
+.month-group{margin-bottom:4px;}
+.month-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:0.5px solid var(--bdr);cursor:pointer;user-select:none;-webkit-user-select:none;}
+.month-hd:active{opacity:0.6;}
+.month-hd-left{display:flex;align-items:center;gap:8px;}
+.month-label{font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;}
+.month-count{font-size:11px;color:var(--txt3);}
+.month-right{display:flex;align-items:center;gap:10px;}
+.month-subtotal{font-size:13px;font-weight:600;color:var(--txt2);}
+.month-chevron{transition:transform 0.2s;color:var(--txt3);}
+.month-chevron.open{transform:rotate(180deg);}
+.month-body{overflow:hidden;}
+.month-body.collapsed{display:none;}
+.overdue-section{background:var(--err-bg);border-radius:var(--rad-lg);padding:2px 12px 4px;margin-bottom:14px;border:0.5px solid var(--err-txt);}
+.overdue-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;}
+.overdue-label{font-size:12px;font-weight:700;color:var(--err-txt);display:flex;align-items:center;gap:6px;}
+.overdue-total{font-size:14px;font-weight:700;color:var(--err-txt);}
+
+.confirm-wrap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:24px;}
 .confirm-wrap.open{display:flex;}
-.confirm-box{background:var(--bg);border-radius:16px;padding:24px 20px 16px;width:100%;max-width:320px;text-align:center;}
+.confirm-box{background:var(--bg);border-radius:20px;padding:28px 20px 20px;width:100%;max-width:320px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
 .confirm-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
 .confirm-icon.del{background:var(--err-bg);}
 .confirm-icon.edit{background:var(--info-bg);}
@@ -351,7 +368,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 </div>
 
 <!-- 確認對話框 -->
-<div class="confirm-wrap" id="confirm-dialog">
+<div class="confirm-wrap" id="confirm-dialog" style="display:none;">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="confirm-icon-svg"></svg>
@@ -503,10 +520,11 @@ function showConfirm({title,msg,type,okLabel,cb}){
   btn.textContent=okLabel||'確認';
   btn.className='confirm-btn '+(type==='del'?'danger':'primary');
   _confirmCB=cb;
-  document.getElementById('confirm-dialog').classList.add('open');
+  const dialog=document.getElementById('confirm-dialog');
+  dialog.style.display='flex';
 }
-function confirmOK(){document.getElementById('confirm-dialog').classList.remove('open');if(_confirmCB)_confirmCB();_confirmCB=null;}
-function confirmCancel(){document.getElementById('confirm-dialog').classList.remove('open');_confirmCB=null;}
+function confirmOK(){document.getElementById('confirm-dialog').style.display='none';if(_confirmCB)_confirmCB();_confirmCB=null;}
+function confirmCancel(){document.getElementById('confirm-dialog').style.display='none';_confirmCB=null;}
 
 // ── 供應商刪除 ──
 function delSupp(id){
@@ -586,6 +604,14 @@ function delFG(sku){
   showConfirm({title:'刪除成品',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{fgData=fgData.filter(r=>r.sku!==sku);saveAll();renderFG();}});
 }
 
+function toggleMonth(id, hd){
+  const body=document.getElementById(id);
+  const chevron=hd.querySelector('.month-chevron');
+  const isOpen=!body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+
 function renderSupp(){
   const s=document.getElementById('supp-s').value.toLowerCase();
   const rows=suppData.filter(r=>!s||(r.name+r.acct+r.bank).toLowerCase().includes(s));
@@ -624,23 +650,91 @@ function renderSupp(){
 function renderAR(){
   const s=document.getElementById('ar-s').value.toLowerCase();
   const f=document.getElementById('ar-f').value;
-  const rows=arData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
+  const filtered=arData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
   const el=document.getElementById('ar-list');
-  if(!rows.length){el.innerHTML='<div class="empty">無符合資料</div>';return;}
-  el.innerHTML=rows.map(r=>`<div class="list-row">
-    <div class="list-left">
-      <div class="list-name">${r.name}</div>
-      <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
-    </div>
-    <div class="list-right">
-      <div class="list-amt">${fmt(r.amount)}</div>
-      ${bdg(r.status)}
-      <div class="acts" style="margin-top:2px;">
-        <button class="ibt edit" onclick="markAR('${r.id}')">${ICON_CHECK}</button>
-        <button class="ibt del" onclick="delAR('${r.id}')">${ICON_TRASH}</button>
-      </div>
-    </div>
-  </div>`).join('');
+  if(!filtered.length){el.innerHTML='<div class="empty">無符合資料</div>';}
+  else{
+    const overdue=filtered.filter(r=>r.status==='逾期');
+    const nonOverdue=filtered.filter(r=>r.status!=='逾期');
+
+    const pending=nonOverdue.filter(r=>r.status==='待收款').sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    const paid=nonOverdue.filter(r=>r.status==='已收款').sort((a,b)=>b.dueDate.localeCompare(a.dueDate));
+    const sorted=[...pending,...paid];
+
+    const groups={};
+    sorted.forEach(r=>{
+      const key=r.dueDate.slice(0,7);
+      if(!groups[key])groups[key]=[];
+      groups[key].push(r);
+    });
+
+    const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+    function monthLabel(key){
+      const [y,m]=key.split('-');
+      return`${y} 年 ${monthNames[parseInt(m)-1]}`;
+    }
+    function arRow(r){
+      return`<div class="list-row">
+        <div class="list-left">
+          <div class="list-name">${r.name}</div>
+          <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+        </div>
+        <div class="list-right">
+          <div class="list-amt">${fmt(r.amount)}</div>
+          ${bdg(r.status)}
+          <div class="acts" style="margin-top:2px;">
+            <button class="ibt edit" onclick="markAR('${r.id}')">${ICON_CHECK}</button>
+            <button class="ibt del" onclick="delAR('${r.id}')">${ICON_TRASH}</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    let html='';
+
+    // 逾期置頂
+    if(overdue.length){
+      const overdueTotal=overdue.reduce((a,r)=>a+r.amount,0);
+      html+=`<div class="overdue-section">
+        <div class="overdue-hd">
+          <div class="overdue-label">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            逾期未收（${overdue.length} 筆）
+          </div>
+          <div class="overdue-total">${fmt(overdueTotal)}</div>
+        </div>
+        ${overdue.map(arRow).join('')}
+      </div>`;
+    }
+
+    // 月份分組
+    const CHEVRON=`<svg class="month-chevron open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    Object.keys(groups).sort().forEach((key,gi)=>{
+      const items=groups[key];
+      const monthTotal=items.reduce((a,r)=>a+r.amount,0);
+      const pendingCount=items.filter(r=>r.status==='待收款').length;
+      const gid=`ar-mg-${gi}`;
+      html+=`<div class="month-group">
+        <div class="month-hd" onclick="toggleMonth('${gid}',this)">
+          <div class="month-hd-left">
+            <div class="month-label">${monthLabel(key)}</div>
+            <div class="month-count">${items.length} 筆</div>
+            ${pendingCount>0?`<span class="badge ba" style="font-size:10px;">待收 ${pendingCount}</span>`:''}
+          </div>
+          <div class="month-right">
+            <div class="month-subtotal">${fmt(monthTotal)}</div>
+            ${CHEVRON}
+          </div>
+        </div>
+        <div class="month-body" id="${gid}">
+          ${items.map(arRow).join('')}
+        </div>
+      </div>`;
+    });
+
+    el.innerHTML=html;
+  }
+
   const tot=arData.reduce((a,r)=>a+r.amount,0),paid=arData.filter(r=>r.status==='已收款').reduce((a,r)=>a+r.amount,0);
   document.getElementById('ar-tot').textContent=fmt(tot);
   document.getElementById('ar-pend').textContent=fmt(arData.filter(r=>r.status==='待收款').reduce((a,r)=>a+r.amount,0));
@@ -652,23 +746,93 @@ function renderAR(){
 function renderAP(){
   const s=document.getElementById('ap-s').value.toLowerCase();
   const f=document.getElementById('ap-f').value;
-  const rows=apData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
+  const filtered=apData.filter(r=>(!s||(r.name+r.id).toLowerCase().includes(s))&&(!f||r.status===f));
   const el=document.getElementById('ap-list');
-  if(!rows.length){el.innerHTML='<div class="empty">無符合資料</div>';return;}
-  el.innerHTML=rows.map(r=>`<div class="list-row">
-    <div class="list-left">
-      <div class="list-name">${r.name}</div>
-      <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
-    </div>
-    <div class="list-right">
-      <div class="list-amt">${fmt(r.amount)}</div>
-      ${bdg(r.status)}
-      <div class="acts" style="margin-top:2px;">
-        <button class="ibt edit" onclick="markAP('${r.id}')">${ICON_CHECK}</button>
-        <button class="ibt del" onclick="delAP('${r.id}')">${ICON_TRASH}</button>
-      </div>
-    </div>
-  </div>`).join('');
+  if(!filtered.length){el.innerHTML='<div class="empty">無符合資料</div>';}
+  else{
+    const overdue=filtered.filter(r=>r.status==='逾期');
+    const nonOverdue=filtered.filter(r=>r.status!=='逾期');
+
+    // Sort non-overdue: pending first within each month, then by dueDate
+    const pending=nonOverdue.filter(r=>r.status==='待付款').sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    const paid=nonOverdue.filter(r=>r.status==='已付款').sort((a,b)=>b.dueDate.localeCompare(a.dueDate));
+    const sorted=[...pending,...paid];
+
+    // Group by year-month of dueDate
+    const groups={};
+    sorted.forEach(r=>{
+      const key=r.dueDate.slice(0,7); // 'YYYY-MM'
+      if(!groups[key])groups[key]=[];
+      groups[key].push(r);
+    });
+
+    const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+    function monthLabel(key){
+      const [y,m]=key.split('-');
+      return `${y} 年 ${monthNames[parseInt(m)-1]}`;
+    }
+    function apRow(r){
+      return`<div class="list-row">
+        <div class="list-left">
+          <div class="list-name">${r.name}</div>
+          <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+        </div>
+        <div class="list-right">
+          <div class="list-amt">${fmt(r.amount)}</div>
+          ${bdg(r.status)}
+          <div class="acts" style="margin-top:2px;">
+            <button class="ibt edit" onclick="markAP('${r.id}')">${ICON_CHECK}</button>
+            <button class="ibt del" onclick="delAP('${r.id}')">${ICON_TRASH}</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    let html='';
+
+    // Overdue section pinned top
+    if(overdue.length){
+      const overdueTotal=overdue.reduce((a,r)=>a+r.amount,0);
+      html+=`<div class="overdue-section">
+        <div class="overdue-hd">
+          <div class="overdue-label">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            逾期未付（${overdue.length} 筆）
+          </div>
+          <div class="overdue-total">${fmt(overdueTotal)}</div>
+        </div>
+        ${overdue.map(apRow).join('')}
+      </div>`;
+    }
+
+    // Monthly groups
+    const CHEVRON=`<svg class="month-chevron open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    Object.keys(groups).sort().forEach((key,gi)=>{
+      const items=groups[key];
+      const monthTotal=items.reduce((a,r)=>a+r.amount,0);
+      const pendingCount=items.filter(r=>r.status==='待付款').length;
+      const gid=`mg-${gi}`;
+      html+=`<div class="month-group">
+        <div class="month-hd" onclick="toggleMonth('${gid}',this)">
+          <div class="month-hd-left">
+            <div class="month-label">${monthLabel(key)}</div>
+            <div class="month-count">${items.length} 筆</div>
+            ${pendingCount>0?`<span class="badge ba" style="font-size:10px;">待付 ${pendingCount}</span>`:''}
+          </div>
+          <div class="month-right">
+            <div class="month-subtotal">${fmt(monthTotal)}</div>
+            ${CHEVRON}
+          </div>
+        </div>
+        <div class="month-body" id="${gid}">
+          ${items.map(apRow).join('')}
+        </div>
+      </div>`;
+    });
+
+    el.innerHTML=html;
+  }
+
   const tot=apData.reduce((a,r)=>a+r.amount,0),paid=apData.filter(r=>r.status==='已付款').reduce((a,r)=>a+r.amount,0);
   document.getElementById('ap-tot').textContent=fmt(tot);
   document.getElementById('ap-pend').textContent=fmt(apData.filter(r=>r.status==='待付款').reduce((a,r)=>a+r.amount,0));
@@ -842,7 +1006,7 @@ document.querySelectorAll('.sheet-wrap').forEach(w=>{
   w.addEventListener('click',e=>{if(e.target===w)hideM(w.id);});
 });
 document.getElementById('confirm-dialog').addEventListener('click',e=>{
-  if(e.target===document.getElementById('confirm-dialog'))confirmCancel();
+  if(e.target===document.getElementById('confirm-dialog')){confirmCancel();}
 });
 
 // PWA
