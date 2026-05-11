@@ -457,40 +457,12 @@ function avColor(id){const i=parseInt(id.replace(/\D/g,''))%avColors.length;retu
 function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch{return def;}}
 function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch{}}
 
-let suppData=load('erp_supp',[
-  {id:'S-001',name:'聯華電子材料',bank:'台灣銀行',branch:'忠孝分行',code:'004',acct:'012-345678900',acctName:'聯華電子材料股份有限公司'},
-  {id:'S-002',name:'台積化工供應商',bank:'第一銀行',branch:'松山分行',code:'007',acct:'031-098765400',acctName:'台積化工供應商有限公司'},
-  {id:'S-003',name:'萬海物流服務',bank:'國泰世華銀行',branch:'信義分行',code:'013',acct:'008-112233445',acctName:'萬海物流服務股份有限公司'},
-]);
-let arData=load('erp_ar',[
-  {id:'AR-001',name:'台灣科技股份有限公司',invDate:'2025-03-01',dueDate:'2025-04-25',terms:30,amount:285000,status:'已收款'},
-  {id:'AR-002',name:'新光實業有限公司',invDate:'2025-03-15',dueDate:'2025-04-25',terms:30,amount:152000,status:'待收款'},
-  {id:'AR-003',name:'遠東商貿集團',invDate:'2025-03-20',dueDate:'2025-05-25',terms:60,amount:98500,status:'逾期'},
-  {id:'AR-004',name:'中華數位科技',invDate:'2025-04-01',dueDate:'2025-07-25',terms:90,amount:340000,status:'待收款'},
-  {id:'AR-005',name:'亞太資訊服務',invDate:'2025-02-15',dueDate:'2025-03-25',terms:30,amount:67000,status:'逾期'},
-]);
-let apData=load('erp_ap',[
-  {id:'AP-001',name:'聯華電子材料',invDate:'2025-03-05',dueDate:'2025-04-25',terms:30,amount:420000,status:'已付款'},
-  {id:'AP-002',name:'台積化工供應商',invDate:'2025-03-18',dueDate:'2025-05-25',terms:60,amount:185000,status:'待付款'},
-  {id:'AP-003',name:'萬海物流服務',invDate:'2025-03-22',dueDate:'2025-04-25',terms:30,amount:53000,status:'逾期'},
-  {id:'AP-004',name:'佳世達科技零件',invDate:'2025-04-02',dueDate:'2025-07-25',terms:90,amount:298000,status:'待付款'},
-  {id:'AP-005',name:'南亞塑膠原料',invDate:'2025-04-05',dueDate:'2025-06-25',terms:60,amount:167000,status:'待付款'},
-]);
-let rawData=load('erp_raw',[
-  {sku:'RAW-001',name:'不鏽鋼螺絲 M6',spec:'pcs',qty:1200,safe:500,price:2.5},
-  {sku:'RAW-002',name:'PCB 基板 FR4',spec:'pcs',qty:85,safe:200,price:320},
-  {sku:'RAW-003',name:'鋁合金外殼 Type-B',spec:'pcs',qty:0,safe:100,price:580},
-  {sku:'RAW-004',name:'矽鋼片 0.5mm',spec:'kg',qty:340,safe:150,price:45},
-  {sku:'RAW-005',name:'銅線 AWG22',spec:'m',qty:62,safe:200,price:12},
-]);
-let fgData=load('erp_fg',[
-  {sku:'FG-001',name:'工業控制器 A5',spec:'A5-Pro',qty:210,safe:80,price:12500},
-  {sku:'FG-002',name:'感測器模組 T3',spec:'T3-Slim',qty:15,safe:60,price:3800},
-  {sku:'FG-003',name:'馬達驅動器 24V',spec:'MD-24',qty:0,safe:30,price:6200},
-  {sku:'FG-004',name:'電源供應器 150W',spec:'PS-150',qty:88,safe:50,price:2100},
-  {sku:'FG-005',name:'HMI 觸控面板 7"',spec:'HMI-7',qty:22,safe:40,price:8900},
-]);
-let seqs=load('erp_seqs',{ar:6,ap:6,raw:6,fg:6,supp:4});
+let suppData=load('erp_supp',[]);
+let arData=load('erp_ar',[]);
+let apData=load('erp_ap',[]);
+let rawData=load('erp_raw',[]);
+let fgData=load('erp_fg',[]);
+let seqs=load('erp_seqs',{ar:1,ap:1,raw:1,fg:1,supp:1});
 
 function saveAll(){
   save('erp_supp',suppData);save('erp_ar',arData);save('erp_ap',apData);
@@ -625,7 +597,7 @@ function renderSupp(){
       <div class="card-top">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="avatar" style="background:${bg};color:${fg};">${initials(r.name)}</div>
-          <div><div class="card-name">${r.name}</div><div class="card-sub">${r.id}</div></div>
+          <div><div class="card-name">${r.name}</div></div>
         </div>
         <div class="acts">
           ${overdue?'<span class="badge br">逾期</span>':hasAP?'<span class="badge bb">有應付</span>':''}
@@ -677,7 +649,7 @@ function renderAR(){
       return`<div class="list-row">
         <div class="list-left">
           <div class="list-name">${r.name}</div>
-          <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+          <div class="list-sub">${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
         </div>
         <div class="list-right">
           <div class="list-amt">${fmt(r.amount)}</div>
@@ -775,7 +747,7 @@ function renderAP(){
       return`<div class="list-row">
         <div class="list-left">
           <div class="list-name">${r.name}</div>
-          <div class="list-sub">${r.id} · ${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
+          <div class="list-sub">${r.invDate} · <span class="badge bp" style="font-size:10px;">${r.terms}天</span> · 到期 ${r.dueDate}</div>
         </div>
         <div class="list-right">
           <div class="list-amt">${fmt(r.amount)}</div>
@@ -956,7 +928,7 @@ function saveSupp(){
   const name=document.getElementById('s-name').value.trim();if(!name)return;
   const data={name,bank:document.getElementById('s-bank').value.trim(),branch:document.getElementById('s-branch').value.trim(),code:document.getElementById('s-code').value.trim(),acct:document.getElementById('s-acct').value.trim(),acctName:document.getElementById('s-acct-name').value.trim()||name};
   if(editingSuppId){const idx=suppData.findIndex(s=>s.id===editingSuppId);if(idx>-1)suppData[idx]={...suppData[idx],...data};}
-  else suppData.push({id:`S-00${seqs.supp++}`,...data});
+  else suppData.push({id:String(seqs.supp++).padStart(3,'0'),...data});
   saveAll();hideM('suppm');renderSupp();
 }
 function addAR(){
@@ -964,7 +936,7 @@ function addAR(){
   if(!cl||!am)return;
   const invDate=document.getElementById('ar-id').value||'—';
   const terms=parseInt(document.getElementById('ar-terms').value);
-  arData.push({id:`AR-00${seqs.ar++}`,name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value});
+  arData.push({id:String(seqs.ar++).padStart(3,'0'),name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value});
   saveAll();hideM('arm');renderAR();
 }
 function addAP(){
@@ -972,17 +944,17 @@ function addAP(){
   if(!vn||!am)return;
   const invDate=document.getElementById('ap-id').value||'—';
   const terms=parseInt(document.getElementById('ap-terms').value);
-  apData.push({id:`AP-00${seqs.ap++}`,name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value});
+  apData.push({id:String(seqs.ap++).padStart(3,'0'),name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value});
   saveAll();hideM('apm');renderAP();
 }
 function addRAW(){
   const nm=document.getElementById('raw-nm').value.trim();if(!nm)return;
-  rawData.push({sku:document.getElementById('raw-sk').value.trim()||`RAW-00${seqs.raw}`,name:nm,spec:document.getElementById('raw-sp').value||'pcs',qty:parseInt(document.getElementById('raw-qt').value)||0,safe:parseInt(document.getElementById('raw-sf').value)||0,price:parseFloat(document.getElementById('raw-pr').value)||0});
+  rawData.push({sku:document.getElementById('raw-sk').value.trim()||String(seqs.raw).padStart(3,'0'),name:nm,spec:document.getElementById('raw-sp').value||'pcs',qty:parseInt(document.getElementById('raw-qt').value)||0,safe:parseInt(document.getElementById('raw-sf').value)||0,price:parseFloat(document.getElementById('raw-pr').value)||0});
   seqs.raw++;saveAll();hideM('rawm');renderRAW();
 }
 function addFG(){
   const nm=document.getElementById('fg-nm').value.trim();if(!nm)return;
-  fgData.push({sku:document.getElementById('fg-sk').value.trim()||`FG-00${seqs.fg}`,name:nm,spec:document.getElementById('fg-sp').value||'',qty:parseInt(document.getElementById('fg-qt').value)||0,safe:parseInt(document.getElementById('fg-sf').value)||0,price:parseFloat(document.getElementById('fg-pr').value)||0});
+  fgData.push({sku:document.getElementById('fg-sk').value.trim()||String(seqs.fg).padStart(3,'0'),name:nm,spec:document.getElementById('fg-sp').value||'',qty:parseInt(document.getElementById('fg-qt').value)||0,safe:parseInt(document.getElementById('fg-sf').value)||0,price:parseFloat(document.getElementById('fg-pr').value)||0});
   seqs.fg++;saveAll();hideM('fgm');renderFG();
 }
 
