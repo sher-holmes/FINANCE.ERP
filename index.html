@@ -34,13 +34,13 @@
   --ok-bg:#1a3008;--ok-txt:#97c459;
   --purple-bg:#1e1a40;--purple-txt:#afa9ec;
 }}
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:96px;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));}
 .topbar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .topbar h1{font-size:17px;font-weight:600;}
-.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--bdr);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.nav-bottom{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--bdr);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,16px);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;cursor:pointer;border:none;background:none;color:var(--txt2);font-size:12px;font-weight:500;gap:5px;transition:color 0.15s;min-height:64px;}
 .nav-item.active{color:var(--txt);}
-.nav-item i{font-size:28px;}
+.nav-item svg{flex-shrink:0;}
 .content{padding:16px;}
 .sec{display:none;}.sec.on{display:block;}
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
@@ -117,6 +117,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 .btn-secondary{background:var(--bg2);color:var(--txt);margin-bottom:8px;}
 .btn-full:active{opacity:0.7;}
 
+.confirm-wrap{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:24px;}
+.confirm-wrap.open{display:flex;}
+.confirm-box{background:var(--bg);border-radius:16px;padding:24px 20px 16px;width:100%;max-width:320px;text-align:center;}
+.confirm-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.confirm-icon.del{background:var(--err-bg);}
+.confirm-icon.edit{background:var(--info-bg);}
+.confirm-title{font-size:17px;font-weight:600;margin-bottom:8px;}
+.confirm-msg{font-size:14px;color:var(--txt2);line-height:1.5;margin-bottom:20px;}
+.confirm-btns{display:flex;flex-direction:column;gap:8px;}
+.confirm-btn{width:100%;padding:13px;border-radius:var(--rad);font-size:15px;font-weight:600;cursor:pointer;border:none;}
+.confirm-btn.danger{background:#c0392b;color:#fff;}
+.confirm-btn.primary{background:#185fa5;color:#fff;}
+.confirm-btn.cancel{background:var(--bg2);color:var(--txt);}
 </style>
 </head>
 <body>
@@ -270,10 +283,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ar-am"></div>
       <div class="form-group"><label>狀態</label><select id="ar-st"><option>待收款</option><option>已收款</option></select></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>發票日期</label><input type="date" id="ar-id" oninput="updateArPrev()"></div>
-      <div class="form-group"><label>收款天數</label><select id="ar-terms" onchange="updateArPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
-    </div>
+    <div class="form-group"><label>發票日期</label><input type="date" id="ar-id" oninput="updateArPrev()" style="width:100%;"></div>
+    <div class="form-group"><label>收款天數</label><select id="ar-terms" onchange="updateArPrev()" style="width:100%;"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
     <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ar-prev">—</div></div></div>
     <button class="btn-full btn-primary" onclick="addAR()" style="margin-top:14px;">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('arm')">取消</button>
@@ -289,10 +300,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ap-am"></div>
       <div class="form-group"><label>狀態</label><select id="ap-st"><option>待付款</option><option>已付款</option></select></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>收票日期</label><input type="date" id="ap-id" oninput="updateApPrev()"></div>
-      <div class="form-group"><label>付款天數</label><select id="ap-terms" onchange="updateApPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
-    </div>
+    <div class="form-group"><label>收票日期</label><input type="date" id="ap-id" oninput="updateApPrev()" style="width:100%;"></div>
+    <div class="form-group"><label>付款天數</label><select id="ap-terms" onchange="updateApPrev()" style="width:100%;"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
     <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ap-prev">—</div></div></div>
     <button class="btn-full btn-primary" onclick="addAP()" style="margin-top:14px;">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('apm')">取消</button>
@@ -338,6 +347,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
     </div>
     <button class="btn-full btn-primary" onclick="addFG()">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('fgm')">取消</button>
+  </div>
+</div>
+
+<!-- 確認對話框 -->
+<div class="confirm-wrap" id="confirm-dialog">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="confirm-icon-svg"></svg>
+    </div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-btn" id="confirm-ok-btn" onclick="confirmOK()"></button>
+      <button class="confirm-btn cancel" onclick="confirmCancel()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 原料編輯 Modal -->
+<div class="sheet-wrap" id="raw-edit-m">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>編輯原料品項</h2><button class="close-btn" onclick="hideM('raw-edit-m')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>品名</label><input type="text" id="re-nm"></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="re-sk"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>單位</label><input type="text" id="re-sp"></div>
+      <div class="form-group"><label>單價</label><input type="number" id="re-pr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>庫存量</label><input type="number" id="re-qt"></div>
+      <div class="form-group"><label>安全庫存量</label><input type="number" id="re-sf"></div>
+    </div>
+    <button class="btn-full btn-primary" onclick="confirmEditRAW()">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('raw-edit-m')">取消</button>
+  </div>
+</div>
+
+<!-- 成品編輯 Modal -->
+<div class="sheet-wrap" id="fg-edit-m">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>編輯成品品項</h2><button class="close-btn" onclick="hideM('fg-edit-m')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>品名</label><input type="text" id="fe-nm"></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="fe-sk"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>型號</label><input type="text" id="fe-sp"></div>
+      <div class="form-group"><label>單價</label><input type="number" id="fe-pr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>庫存量</label><input type="number" id="fe-qt"></div>
+      <div class="form-group"><label>安全庫存量</label><input type="number" id="fe-sf"></div>
+    </div>
+    <button class="btn-full btn-primary" onclick="confirmEditFG()">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('fg-edit-m')">取消</button>
   </div>
 </div>
 
@@ -416,6 +482,110 @@ function saveAll(){
 
 let editingSuppId=null;
 
+const ICON_EDIT=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const ICON_TRASH=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+const ICON_CHECK=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const ICON_PLUS=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+// ── 確認對話框 ──
+let _confirmCB=null;
+const TRASH_SVG=`<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>`;
+const EDIT_SVG=`<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>`;
+const CHECK_SVG=`<polyline points="20 6 9 17 4 12"/>`;
+
+function showConfirm({title,msg,type,okLabel,cb}){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-icon-svg').innerHTML=type==='del'?TRASH_SVG:type==='edit'?EDIT_SVG:CHECK_SVG;
+  const icon=document.getElementById('confirm-icon');
+  icon.className='confirm-icon '+(type==='del'?'del':'edit');
+  const btn=document.getElementById('confirm-ok-btn');
+  btn.textContent=okLabel||'確認';
+  btn.className='confirm-btn '+(type==='del'?'danger':'primary');
+  _confirmCB=cb;
+  document.getElementById('confirm-dialog').classList.add('open');
+}
+function confirmOK(){document.getElementById('confirm-dialog').classList.remove('open');if(_confirmCB)_confirmCB();_confirmCB=null;}
+function confirmCancel(){document.getElementById('confirm-dialog').classList.remove('open');_confirmCB=null;}
+
+// ── 供應商刪除 ──
+function delSupp(id){
+  const r=suppData.find(s=>s.id===id);
+  showConfirm({title:'刪除供應商',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{suppData=suppData.filter(r=>r.id!==id);saveAll();renderSupp();}});
+}
+
+// ── 應收 ──
+function markAR(id){
+  const r=arData.find(r=>r.id===id);
+  showConfirm({title:'標記已收款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已收款？`,type:'edit',okLabel:'確定',cb:()=>{r.status='已收款';saveAll();renderAR();}});
+}
+function delAR(id){
+  const r=arData.find(r=>r.id===id);
+  showConfirm({title:'刪除應收帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:()=>{arData=arData.filter(r=>r.id!==id);saveAll();renderAR();}});
+}
+
+// ── 應付 ──
+function markAP(id){
+  const r=apData.find(r=>r.id===id);
+  showConfirm({title:'標記已付款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已付款？`,type:'edit',okLabel:'確定',cb:()=>{r.status='已付款';saveAll();renderAP();}});
+}
+function delAP(id){
+  const r=apData.find(r=>r.id===id);
+  showConfirm({title:'刪除應付帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:()=>{apData=apData.filter(r=>r.id!==id);saveAll();renderAP();}});
+}
+
+// ── 庫存原料 ──
+let _editRawSku=null;
+function openEditRAW(sku){
+  const r=rawData.find(r=>r.sku===sku);if(!r)return;
+  _editRawSku=sku;
+  document.getElementById('re-nm').value=r.name;
+  document.getElementById('re-sk').value=r.sku;
+  document.getElementById('re-sp').value=r.spec;
+  document.getElementById('re-pr').value=r.price;
+  document.getElementById('re-qt').value=r.qty;
+  document.getElementById('re-sf').value=r.safe;
+  showM('raw-edit-m');
+}
+function confirmEditRAW(){
+  const nm=document.getElementById('re-nm').value.trim();if(!nm)return;
+  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:()=>{
+    const idx=rawData.findIndex(r=>r.sku===_editRawSku);
+    if(idx>-1){rawData[idx]={...rawData[idx],name:nm,sku:document.getElementById('re-sk').value.trim()||_editRawSku,spec:document.getElementById('re-sp').value||'pcs',price:parseFloat(document.getElementById('re-pr').value)||0,qty:parseInt(document.getElementById('re-qt').value)||0,safe:parseInt(document.getElementById('re-sf').value)||0};}
+    saveAll();hideM('raw-edit-m');renderRAW();
+  }});
+}
+function delRAW(sku){
+  const r=rawData.find(r=>r.sku===sku);
+  showConfirm({title:'刪除原料',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{rawData=rawData.filter(r=>r.sku!==sku);saveAll();renderRAW();}});
+}
+
+// ── 庫存成品 ──
+let _editFgSku=null;
+function openEditFG(sku){
+  const r=fgData.find(r=>r.sku===sku);if(!r)return;
+  _editFgSku=sku;
+  document.getElementById('fe-nm').value=r.name;
+  document.getElementById('fe-sk').value=r.sku;
+  document.getElementById('fe-sp').value=r.spec;
+  document.getElementById('fe-pr').value=r.price;
+  document.getElementById('fe-qt').value=r.qty;
+  document.getElementById('fe-sf').value=r.safe;
+  showM('fg-edit-m');
+}
+function confirmEditFG(){
+  const nm=document.getElementById('fe-nm').value.trim();if(!nm)return;
+  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:()=>{
+    const idx=fgData.findIndex(r=>r.sku===_editFgSku);
+    if(idx>-1){fgData[idx]={...fgData[idx],name:nm,sku:document.getElementById('fe-sk').value.trim()||_editFgSku,spec:document.getElementById('fe-sp').value||'',price:parseFloat(document.getElementById('fe-pr').value)||0,qty:parseInt(document.getElementById('fe-qt').value)||0,safe:parseInt(document.getElementById('fe-sf').value)||0};}
+    saveAll();hideM('fg-edit-m');renderFG();
+  }});
+}
+function delFG(sku){
+  const r=fgData.find(r=>r.sku===sku);
+  showConfirm({title:'刪除成品',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{fgData=fgData.filter(r=>r.sku!==sku);saveAll();renderFG();}});
+}
+
 function renderSupp(){
   const s=document.getElementById('supp-s').value.toLowerCase();
   const rows=suppData.filter(r=>!s||(r.name+r.acct+r.bank).toLowerCase().includes(s));
@@ -450,11 +620,6 @@ function renderSupp(){
   document.getElementById('supp-overdue').textContent=suppData.filter(r=>apData.some(a=>a.name===r.name&&a.status==='逾期')).length;
   updateDash();
 }
-
-const ICON_EDIT=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
-const ICON_TRASH=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-const ICON_CHECK=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-const ICON_PLUS=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 
 function renderAR(){
   const s=document.getElementById('ar-s').value.toLowerCase();
@@ -527,7 +692,7 @@ function renderRAW(){
     <div class="list-right">
       <div style="font-size:13px;font-weight:500;">${fmt(r.price)}</div>
       <div class="acts" style="margin-top:4px;">
-        <button class="ibt edit" onclick="restockRAW('${r.sku}')">${ICON_PLUS}</button>
+        <button class="ibt edit" onclick="openEditRAW('${r.sku}')">${ICON_EDIT}</button>
         <button class="ibt del" onclick="delRAW('${r.sku}')">${ICON_TRASH}</button>
       </div>
     </div>
@@ -556,7 +721,7 @@ function renderFG(){
     <div class="list-right">
       <div style="font-size:13px;font-weight:500;">${fmt(r.price)}</div>
       <div class="acts" style="margin-top:4px;">
-        <button class="ibt edit" onclick="restockFG('${r.sku}')">${ICON_PLUS}</button>
+        <button class="ibt edit" onclick="openEditFG('${r.sku}')">${ICON_EDIT}</button>
         <button class="ibt del" onclick="delFG('${r.sku}')">${ICON_TRASH}</button>
       </div>
     </div>
@@ -630,17 +795,6 @@ function saveSupp(){
   else suppData.push({id:`S-00${seqs.supp++}`,...data});
   saveAll();hideM('suppm');renderSupp();
 }
-function delSupp(id){suppData=suppData.filter(r=>r.id!==id);saveAll();renderSupp();}
-
-function markAR(id){const r=arData.find(r=>r.id===id);if(r)r.status='已收款';saveAll();renderAR();}
-function delAR(id){arData=arData.filter(r=>r.id!==id);saveAll();renderAR();}
-function markAP(id){const r=apData.find(r=>r.id===id);if(r)r.status='已付款';saveAll();renderAP();}
-function delAP(id){apData=apData.filter(r=>r.id!==id);saveAll();renderAP();}
-function restockRAW(sku){const r=rawData.find(r=>r.sku===sku);if(r){r.qty+=10;saveAll();renderRAW();}}
-function delRAW(sku){rawData=rawData.filter(r=>r.sku!==sku);saveAll();renderRAW();}
-function restockFG(sku){const r=fgData.find(r=>r.sku===sku);if(r){r.qty+=10;saveAll();renderFG();}}
-function delFG(sku){fgData=fgData.filter(r=>r.sku!==sku);saveAll();renderFG();}
-
 function addAR(){
   const cl=document.getElementById('ar-cl').value.trim(),am=parseFloat(document.getElementById('ar-am').value)||0;
   if(!cl||!am)return;
@@ -686,6 +840,9 @@ function exportCSV(){
 // 點擊背景關閉 modal
 document.querySelectorAll('.sheet-wrap').forEach(w=>{
   w.addEventListener('click',e=>{if(e.target===w)hideM(w.id);});
+});
+document.getElementById('confirm-dialog').addEventListener('click',e=>{
+  if(e.target===document.getElementById('confirm-dialog'))confirmCancel();
 });
 
 // PWA
