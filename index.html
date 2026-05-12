@@ -110,7 +110,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 .close-btn{border:none;background:var(--bg2);color:var(--txt2);width:30px;height:30px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .form-group{margin-bottom:14px;}
 .form-group label{font-size:12px;color:var(--txt2);display:block;margin-bottom:5px;}
-.form-group input,.form-group select{width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}
+.form-group input,.form-group select{width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);min-height:46px;}
+/* 自製日曆 */
+.date-input-btn{width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);min-height:46px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.date-input-btn.empty{color:var(--txt3);}
+.date-input-btn svg{flex-shrink:0;opacity:0.5;}
+.cal-wrap{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center;}
+.cal-wrap.open{display:flex;}
+.cal-box{background:#1c1c1e;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:0 0 calc(20px + env(safe-area-inset-bottom));animation:slideUp 0.25s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.cal-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;}
+.cal-hd h3{font-size:16px;font-weight:600;color:#f2f2f7;}
+.cal-hd button{border:none;background:none;color:#0a84ff;font-size:15px;font-weight:500;padding:4px 8px;cursor:pointer;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;}
+.cal-month-label{font-size:16px;font-weight:600;color:#f2f2f7;}
+.cal-nav-btn{width:36px;height:36px;border-radius:50%;border:none;background:#2c2c2e;color:#f2f2f7;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.cal-nav-btn:active{opacity:0.6;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 12px 16px;}
+.cal-dow{text-align:center;font-size:12px;font-weight:500;color:#636366;padding:6px 0;}
+.cal-day{text-align:center;font-size:15px;padding:0;border:none;background:none;color:#f2f2f7;cursor:pointer;border-radius:50%;width:40px;height:40px;margin:0 auto;display:flex;align-items:center;justify-content:center;}
+.cal-day:active{background:#3a3a3c;}
+.cal-day.today{color:#0a84ff;font-weight:700;}
+.cal-day.selected{background:#0a84ff;color:#fff;font-weight:600;}
+.cal-day.other-month{color:#48484a;}
+.cal-day.today.selected{background:#0a84ff;color:#fff;}
+
+.form-group select{padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .btn-full{width:100%;padding:14px;border-radius:var(--rad);font-size:15px;font-weight:600;cursor:pointer;border:none;margin-top:4px;}
 .btn-primary{background:var(--txt);color:var(--bg);}
@@ -300,8 +325,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ar-am"></div>
       <div class="form-group"><label>狀態</label><select id="ar-st"><option>待收款</option><option>已收款</option></select></div>
     </div>
-    <div class="form-group"><label>發票日期</label><input type="date" id="ar-id" oninput="updateArPrev()" style="width:100%;"></div>
-    <div class="form-group"><label>收款天數</label><select id="ar-terms" onchange="updateArPrev()" style="width:100%;"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>發票日期</label><button type="button" class="date-input-btn empty" id="ar-id-btn" onclick="openCal('ar-id-btn','ar-id-val',updateArPrev)"><span id="ar-id-display">選擇日期</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button><input type="hidden" id="ar-id-val"></div>
+      <div class="form-group"><label>收款天數</label><select id="ar-terms" onchange="updateArPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
     <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ar-prev">—</div></div></div>
     <button class="btn-full btn-primary" onclick="addAR()" style="margin-top:14px;">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('arm')">取消</button>
@@ -317,8 +344,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ap-am"></div>
       <div class="form-group"><label>狀態</label><select id="ap-st"><option>待付款</option><option>已付款</option></select></div>
     </div>
-    <div class="form-group"><label>收票日期</label><input type="date" id="ap-id" oninput="updateApPrev()" style="width:100%;"></div>
-    <div class="form-group"><label>付款天數</label><select id="ap-terms" onchange="updateApPrev()" style="width:100%;"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>收票日期</label><button type="button" class="date-input-btn empty" id="ap-id-btn" onclick="openCal('ap-id-btn','ap-id-val',updateApPrev)"><span id="ap-id-display">選擇日期</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button><input type="hidden" id="ap-id-val"></div>
+      <div class="form-group"><label>付款天數</label><select id="ap-terms" onchange="updateApPrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
     <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ap-prev">—</div></div></div>
     <button class="btn-full btn-primary" onclick="addAP()" style="margin-top:14px;">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('apm')">取消</button>
@@ -334,7 +363,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>編碼</label><input type="text" id="raw-sk"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>單位</label><input type="text" id="raw-sp" placeholder="pcs/kg/m"></div>
+      <div class="form-group"><label>單位</label><input type="text" id="raw-sp"></div>
       <div class="form-group"><label>單價</label><input type="number" id="raw-pr"></div>
     </div>
     <div class="form-row">
@@ -355,7 +384,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>編碼</label><input type="text" id="fg-sk"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>型號</label><input type="text" id="fg-sp"></div>
+      <div class="form-group"><label>單位</label><input type="text" id="fg-sp"></div>
       <div class="form-group"><label>單價</label><input type="number" id="fg-pr"></div>
     </div>
     <div class="form-row">
@@ -364,6 +393,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
     </div>
     <button class="btn-full btn-primary" onclick="addFG()">儲存</button>
     <button class="btn-full btn-secondary" onclick="hideM('fgm')">取消</button>
+  </div>
+</div>
+
+<!-- 自製日曆 -->
+<div class="cal-wrap" id="cal-wrap">
+  <div class="cal-box">
+    <div class="cal-hd">
+      <button onclick="closeCal()">取消</button>
+      <h3 id="cal-title">選擇日期</h3>
+      <button onclick="calToday()">今天</button>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrevMonth()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="calNextMonth()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="cal-grid" id="cal-grid">
+      <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>
+    </div>
   </div>
 </div>
 
@@ -412,7 +460,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="form-group"><label>編碼</label><input type="text" id="fe-sk"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>型號</label><input type="text" id="fe-sp"></div>
+      <div class="form-group"><label>單位</label><input type="text" id="fe-sp"></div>
       <div class="form-group"><label>單價</label><input type="number" id="fe-pr"></div>
     </div>
     <div class="form-row">
@@ -446,28 +494,192 @@ function calcDue25(d,days){
   const dt=new Date(d);dt.setDate(dt.getDate()+parseInt(days));
   return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-25`;
 }
-function updateArPrev(){document.getElementById('ar-prev').textContent=calcDue25(document.getElementById('ar-id').value,document.getElementById('ar-terms').value)||'請先選擇日期';}
-function updateApPrev(){document.getElementById('ap-prev').textContent=calcDue25(document.getElementById('ap-id').value,document.getElementById('ap-terms').value)||'請先選擇日期';}
+function updateArPrev(){
+  const inv=document.getElementById('ar-id-val').value;
+  const terms=document.getElementById('ar-terms').value;
+  document.getElementById('ar-prev').textContent=inv?calcDue25(inv,terms):'請先選擇日期';
+}
+function updateApPrev(){
+  const inv=document.getElementById('ap-id-val').value;
+  const terms=document.getElementById('ap-terms').value;
+  document.getElementById('ap-prev').textContent=inv?calcDue25(inv,terms):'請先選擇日期';
+}
+
+// ── 自製日曆 ──
+let _calTargetBtn=null,_calTargetInput=null,_calCB=null;
+let _calYear=0,_calMonth=0,_calSelected=null;
+const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+function openCal(btnId,inputId,cb){
+  _calTargetBtn=document.getElementById(btnId);
+  _calTargetInput=document.getElementById(inputId);
+  _calCB=cb;
+  const today=new Date();
+  const existing=_calTargetInput.value;
+  if(existing){
+    const d=new Date(existing);
+    _calYear=d.getFullYear();_calMonth=d.getMonth();_calSelected=existing;
+  } else {
+    _calYear=today.getFullYear();_calMonth=today.getMonth();_calSelected=null;
+  }
+  renderCal();
+  document.getElementById('cal-wrap').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeCal(){
+  document.getElementById('cal-wrap').style.display='none';
+  document.body.style.overflow='';
+}
+function calToday(){
+  const t=new Date();
+  const str=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  selectCalDay(str);
+}
+function calPrevMonth(){if(_calMonth===0){_calMonth=11;_calYear--;}else _calMonth--;renderCal();}
+function calNextMonth(){if(_calMonth===11){_calMonth=0;_calYear++;}else _calMonth++;renderCal();}
+function renderCal(){
+  document.getElementById('cal-month-label').textContent=`${_calYear} 年 ${monthNames[_calMonth]}`;
+  const firstDay=new Date(_calYear,_calMonth,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  const daysInPrev=new Date(_calYear,_calMonth,0).getDate();
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const grid=document.getElementById('cal-grid');
+  // Remove old day buttons (keep first 7 DOW headers)
+  while(grid.children.length>7) grid.removeChild(grid.lastChild);
+  // prev month days
+  for(let i=firstDay-1;i>=0;i--){
+    const btn=document.createElement('button');
+    btn.className='cal-day other-month';
+    btn.textContent=daysInPrev-i;
+    btn.onclick=calPrevMonth;
+    grid.appendChild(btn);
+  }
+  // current month
+  for(let d=1;d<=daysInMonth;d++){
+    const str=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const btn=document.createElement('button');
+    btn.className='cal-day'+(str===todayStr?' today':'')+(str===_calSelected?' selected':'');
+    btn.textContent=d;
+    btn.onclick=()=>selectCalDay(str);
+    grid.appendChild(btn);
+  }
+  // next month fill
+  const total=firstDay+daysInMonth;
+  const remaining=(7-total%7)%7;
+  for(let d=1;d<=remaining;d++){
+    const btn=document.createElement('button');
+    btn.className='cal-day other-month';
+    btn.textContent=d;
+    btn.onclick=calNextMonth;
+    grid.appendChild(btn);
+  }
+}
+function selectCalDay(str){
+  _calSelected=str;
+  // Format display: YYYY-MM-DD → YYYY/MM/DD
+  const [y,m,d]=str.split('-');
+  const display=`${y}/${m}/${d}`;
+  const displayEl=_calTargetBtn.querySelector('span');
+  if(displayEl)displayEl.textContent=display;
+  _calTargetBtn.classList.remove('empty');
+  _calTargetInput.value=str;
+  if(_calCB)_calCB();
+  closeCal();
+}
 
 function initials(name){return name.replace(/[（(【\s]/g,' ').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
 const avColors=[['#e6f1fb','#185fa5'],['#e1f5ee','#0f6e56'],['#eeedfe','#534ab7'],['#faeeda','#854f0b'],['#fcebeb','#a32d2d']];
 function avColor(id){const i=parseInt(id.replace(/\D/g,''))%avColors.length;return avColors[i];}
 
-// Data with localStorage persistence
-function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch{return def;}}
-function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch{}}
+// ── Supabase 設定 ──
+const SB_URL='https://kdsrxfbkujwovpyldycr.supabase.co/rest/v1';
+const SB_KEY='sb_publishable_c-ar0WssequM9HBbog7X4g_WwBWJFP4';
+const SB_HDR={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
 
-let suppData=load('erp_supp',[]);
-let arData=load('erp_ar',[]);
-let apData=load('erp_ap',[]);
-let rawData=load('erp_raw',[]);
-let fgData=load('erp_fg',[]);
-let seqs=load('erp_seqs',{ar:1,ap:1,raw:1,fg:1,supp:1});
-
-function saveAll(){
-  save('erp_supp',suppData);save('erp_ar',arData);save('erp_ap',apData);
-  save('erp_raw',rawData);save('erp_fg',fgData);save('erp_seqs',seqs);
+async function sbGet(table){
+  try{
+    const r=await fetch(`${SB_URL}/${table}?select=*`,{headers:SB_HDR});
+    if(!r.ok)return [];
+    return await r.json();
+  }catch{return [];}
 }
+async function sbUpsert(table,row){
+  try{
+    await fetch(`${SB_URL}/${table}`,{method:'POST',headers:{...SB_HDR,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(row)});
+  }catch(e){console.error(e);}
+}
+async function sbDelete(table,col,val){
+  try{
+    await fetch(`${SB_URL}/${table}?${col}=eq.${encodeURIComponent(val)}`,{method:'DELETE',headers:SB_HDR});
+  }catch(e){console.error(e);}
+}
+async function sbGetSeqs(){
+  try{
+    const r=await fetch(`${SB_URL}/app_seqs?select=*`,{headers:SB_HDR});
+    if(!r.ok)return {ar:1,ap:1,raw:1,fg:1,supp:1};
+    const rows=await r.json();
+    const s={ar:1,ap:1,raw:1,fg:1,supp:1};
+    rows.forEach(r=>{if(r.key in s)s[r.key]=r.val;});
+    return s;
+  }catch{return {ar:1,ap:1,raw:1,fg:1,supp:1};}
+}
+async function sbSaveSeq(key,val){
+  try{
+    await fetch(`${SB_URL}/app_seqs`,{method:'POST',headers:{...SB_HDR,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({key,val})});
+  }catch{}
+}
+
+// map DB row → app object
+function mapAR(r){return{id:r.id,name:r.name,invDate:r.inv_date,dueDate:r.due_date,terms:r.terms,amount:r.amount,status:r.status};}
+function mapAP(r){return{id:r.id,name:r.name,invDate:r.inv_date,dueDate:r.due_date,terms:r.terms,amount:r.amount,status:r.status};}
+function mapSupp(r){return{id:r.id,name:r.name,bank:r.bank,branch:r.branch,code:r.code,acct:r.acct,acctName:r.acct_name};}
+function mapRaw(r){return{sku:r.sku,name:r.name,spec:r.spec,qty:r.qty,safe:r.safe,price:r.price};}
+function mapFG(r){return{sku:r.sku,name:r.name,spec:r.spec,qty:r.qty,safe:r.safe,price:r.price};}
+
+let suppData=[],arData=[],apData=[],rawData=[],fgData=[];
+let seqs={ar:1,ap:1,raw:1,fg:1,supp:1};
+
+// 顯示載入中
+function showLoading(on){
+  let el=document.getElementById('loading-overlay');
+  if(!el){
+    el=document.createElement('div');
+    el.id='loading-overlay';
+    el.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    el.innerHTML='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><div style="font-size:14px;color:var(--txt2);">載入資料中...</div>';
+    el.querySelector('svg').style.cssText='animation:spin 1s linear infinite;';
+    const style=document.createElement('style');
+    style.textContent='@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+    document.body.appendChild(el);
+  }
+  el.style.display=on?'flex':'none';
+}
+
+async function loadAll(){
+  showLoading(true);
+  try{
+    const [ar,ap,supp,raw,fg,sq]=await Promise.all([
+      sbGet('ar_data'),sbGet('ap_data'),sbGet('suppliers'),sbGet('raw_inv'),sbGet('fg_inv'),sbGetSeqs()
+    ]);
+    arData=ar.map(mapAR);
+    apData=ap.map(mapAP);
+    suppData=supp.map(mapSupp);
+    rawData=raw.map(mapRaw);
+    fgData=fg.map(mapFG);
+    seqs=sq;
+  }catch(e){console.error(e);}
+  showLoading(false);
+  renderSupp();renderAR();renderAP();renderRAW();renderFG();
+}
+
+async function dbSaveAR(row){await sbUpsert('ar_data',{id:row.id,name:row.name,inv_date:row.invDate,due_date:row.dueDate,terms:row.terms,amount:row.amount,status:row.status});}
+async function dbSaveAP(row){await sbUpsert('ap_data',{id:row.id,name:row.name,inv_date:row.invDate,due_date:row.dueDate,terms:row.terms,amount:row.amount,status:row.status});}
+async function dbSaveSupp(row){await sbUpsert('suppliers',{id:row.id,name:row.name,bank:row.bank,branch:row.branch,code:row.code,acct:row.acct,acct_name:row.acctName});}
+async function dbSaveRaw(row){await sbUpsert('raw_inv',{sku:row.sku,name:row.name,spec:row.spec,qty:row.qty,safe:row.safe,price:row.price});}
+async function dbSaveFG(row){await sbUpsert('fg_inv',{sku:row.sku,name:row.name,spec:row.spec,qty:row.qty,safe:row.safe,price:row.price});}
+async function saveSeq(key){await sbSaveSeq(key,seqs[key]);}
 
 let editingSuppId=null;
 
@@ -501,27 +713,47 @@ function confirmCancel(){document.getElementById('confirm-dialog').style.display
 // ── 供應商刪除 ──
 function delSupp(id){
   const r=suppData.find(s=>s.id===id);
-  showConfirm({title:'刪除供應商',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{suppData=suppData.filter(r=>r.id!==id);saveAll();renderSupp();}});
+  showConfirm({title:'刪除供應商',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    suppData=suppData.filter(r=>r.id!==id);
+    await sbDelete('suppliers','id',id);
+    renderSupp();
+  }});
 }
 
 // ── 應收 ──
 function markAR(id){
   const r=arData.find(r=>r.id===id);
-  showConfirm({title:'標記已收款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已收款？`,type:'edit',okLabel:'確定',cb:()=>{r.status='已收款';saveAll();renderAR();}});
+  showConfirm({title:'標記已收款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已收款？`,type:'edit',okLabel:'確定',cb:async()=>{
+    r.status='已收款';
+    await dbSaveAR(r);
+    renderAR();
+  }});
 }
 function delAR(id){
   const r=arData.find(r=>r.id===id);
-  showConfirm({title:'刪除應收帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:()=>{arData=arData.filter(r=>r.id!==id);saveAll();renderAR();}});
+  showConfirm({title:'刪除應收帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    arData=arData.filter(r=>r.id!==id);
+    await sbDelete('ar_data','id',id);
+    renderAR();
+  }});
 }
 
 // ── 應付 ──
 function markAP(id){
   const r=apData.find(r=>r.id===id);
-  showConfirm({title:'標記已付款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已付款？`,type:'edit',okLabel:'確定',cb:()=>{r.status='已付款';saveAll();renderAP();}});
+  showConfirm({title:'標記已付款',msg:`確定將「${r?.name}」的 ${fmt(r?.amount)} 標記為已付款？`,type:'edit',okLabel:'確定',cb:async()=>{
+    r.status='已付款';
+    await dbSaveAP(r);
+    renderAP();
+  }});
 }
 function delAP(id){
   const r=apData.find(r=>r.id===id);
-  showConfirm({title:'刪除應付帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:()=>{apData=apData.filter(r=>r.id!==id);saveAll();renderAP();}});
+  showConfirm({title:'刪除應付帳款',msg:`確定要刪除「${r?.name}」的 ${fmt(r?.amount)} 帳款？`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    apData=apData.filter(r=>r.id!==id);
+    await sbDelete('ap_data','id',id);
+    renderAP();
+  }});
 }
 
 // ── 庫存原料 ──
@@ -539,15 +771,24 @@ function openEditRAW(sku){
 }
 function confirmEditRAW(){
   const nm=document.getElementById('re-nm').value.trim();if(!nm)return;
-  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:()=>{
+  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:async()=>{
     const idx=rawData.findIndex(r=>r.sku===_editRawSku);
-    if(idx>-1){rawData[idx]={...rawData[idx],name:nm,sku:document.getElementById('re-sk').value.trim()||_editRawSku,spec:document.getElementById('re-sp').value||'pcs',price:parseFloat(document.getElementById('re-pr').value)||0,qty:parseInt(document.getElementById('re-qt').value)||0,safe:parseInt(document.getElementById('re-sf').value)||0};}
-    saveAll();hideM('raw-edit-m');renderRAW();
+    if(idx>-1){
+      const newSku=document.getElementById('re-sk').value.trim()||_editRawSku;
+      if(newSku!==_editRawSku)await sbDelete('raw_inv','sku',_editRawSku);
+      rawData[idx]={sku:newSku,name:nm,spec:document.getElementById('re-sp').value||'',price:parseFloat(document.getElementById('re-pr').value)||0,qty:parseInt(document.getElementById('re-qt').value)||0,safe:parseInt(document.getElementById('re-sf').value)||0};
+      await dbSaveRaw(rawData[idx]);
+    }
+    hideM('raw-edit-m');renderRAW();
   }});
 }
 function delRAW(sku){
   const r=rawData.find(r=>r.sku===sku);
-  showConfirm({title:'刪除原料',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{rawData=rawData.filter(r=>r.sku!==sku);saveAll();renderRAW();}});
+  showConfirm({title:'刪除原料',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    rawData=rawData.filter(r=>r.sku!==sku);
+    await sbDelete('raw_inv','sku',sku);
+    renderRAW();
+  }});
 }
 
 // ── 庫存成品 ──
@@ -565,15 +806,24 @@ function openEditFG(sku){
 }
 function confirmEditFG(){
   const nm=document.getElementById('fe-nm').value.trim();if(!nm)return;
-  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:()=>{
+  showConfirm({title:'儲存變更',msg:`確定要更新「${nm}」的資料？`,type:'edit',okLabel:'儲存',cb:async()=>{
     const idx=fgData.findIndex(r=>r.sku===_editFgSku);
-    if(idx>-1){fgData[idx]={...fgData[idx],name:nm,sku:document.getElementById('fe-sk').value.trim()||_editFgSku,spec:document.getElementById('fe-sp').value||'',price:parseFloat(document.getElementById('fe-pr').value)||0,qty:parseInt(document.getElementById('fe-qt').value)||0,safe:parseInt(document.getElementById('fe-sf').value)||0};}
-    saveAll();hideM('fg-edit-m');renderFG();
+    if(idx>-1){
+      const newSku=document.getElementById('fe-sk').value.trim()||_editFgSku;
+      if(newSku!==_editFgSku)await sbDelete('fg_inv','sku',_editFgSku);
+      fgData[idx]={sku:newSku,name:nm,spec:document.getElementById('fe-sp').value||'',price:parseFloat(document.getElementById('fe-pr').value)||0,qty:parseInt(document.getElementById('fe-qt').value)||0,safe:parseInt(document.getElementById('fe-sf').value)||0};
+      await dbSaveFG(fgData[idx]);
+    }
+    hideM('fg-edit-m');renderFG();
   }});
 }
 function delFG(sku){
   const r=fgData.find(r=>r.sku===sku);
-  showConfirm({title:'刪除成品',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:()=>{fgData=fgData.filter(r=>r.sku!==sku);saveAll();renderFG();}});
+  showConfirm({title:'刪除成品',msg:`確定要刪除「${r?.name}」？此操作無法復原。`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    fgData=fgData.filter(r=>r.sku!==sku);
+    await sbDelete('fg_inv','sku',sku);
+    renderFG();
+  }});
 }
 
 function toggleMonth(id, hd){
@@ -924,47 +1174,73 @@ function openSuppModal(id){
   }
   showM('suppm');
 }
-function saveSupp(){
+async function saveSupp(){
   const name=document.getElementById('s-name').value.trim();if(!name)return;
   const data={name,bank:document.getElementById('s-bank').value.trim(),branch:document.getElementById('s-branch').value.trim(),code:document.getElementById('s-code').value.trim(),acct:document.getElementById('s-acct').value.trim(),acctName:document.getElementById('s-acct-name').value.trim()||name};
-  if(editingSuppId){const idx=suppData.findIndex(s=>s.id===editingSuppId);if(idx>-1)suppData[idx]={...suppData[idx],...data};}
-  else suppData.push({id:String(seqs.supp++).padStart(3,'0'),...data});
-  saveAll();hideM('suppm');renderSupp();
+  if(editingSuppId){
+    const idx=suppData.findIndex(s=>s.id===editingSuppId);
+    if(idx>-1){suppData[idx]={...suppData[idx],...data};await dbSaveSupp(suppData[idx]);}
+  } else {
+    const id=String(seqs.supp++).padStart(3,'0');
+    const row={id,...data};
+    suppData.push(row);
+    await dbSaveSupp(row);
+    await saveSeq('supp');
+  }
+  hideM('suppm');renderSupp();
 }
-function addAR(){
+async function addAR(){
   const cl=document.getElementById('ar-cl').value.trim(),am=parseFloat(document.getElementById('ar-am').value)||0;
   if(!cl||!am)return;
-  const invDate=document.getElementById('ar-id').value||'—';
+  const invDate=document.getElementById('ar-id-val').value||'—';
   const terms=parseInt(document.getElementById('ar-terms').value);
-  arData.push({id:String(seqs.ar++).padStart(3,'0'),name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value});
-  saveAll();hideM('arm');renderAR();
+  const row={id:String(seqs.ar++).padStart(3,'0'),name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value};
+  arData.push(row);
+  await dbSaveAR(row);await saveSeq('ar');
+  hideM('arm');
+  document.getElementById('ar-id-btn').querySelector('span').textContent='選擇日期';
+  document.getElementById('ar-id-btn').classList.add('empty');
+  document.getElementById('ar-id-val').value='';
+  document.getElementById('ar-prev').textContent='—';
+  renderAR();
 }
-function addAP(){
+async function addAP(){
   const vn=document.getElementById('ap-vn').value.trim(),am=parseFloat(document.getElementById('ap-am').value)||0;
   if(!vn||!am)return;
-  const invDate=document.getElementById('ap-id').value||'—';
+  const invDate=document.getElementById('ap-id-val').value||'—';
   const terms=parseInt(document.getElementById('ap-terms').value);
-  apData.push({id:String(seqs.ap++).padStart(3,'0'),name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value});
-  saveAll();hideM('apm');renderAP();
+  const row={id:String(seqs.ap++).padStart(3,'0'),name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value};
+  apData.push(row);
+  await dbSaveAP(row);await saveSeq('ap');
+  hideM('apm');
+  document.getElementById('ap-id-btn').querySelector('span').textContent='選擇日期';
+  document.getElementById('ap-id-btn').classList.add('empty');
+  document.getElementById('ap-id-val').value='';
+  document.getElementById('ap-prev').textContent='—';
+  renderAP();
 }
-function addRAW(){
+async function addRAW(){
   const nm=document.getElementById('raw-nm').value.trim();if(!nm)return;
-  rawData.push({sku:document.getElementById('raw-sk').value.trim()||String(seqs.raw).padStart(3,'0'),name:nm,spec:document.getElementById('raw-sp').value||'pcs',qty:parseInt(document.getElementById('raw-qt').value)||0,safe:parseInt(document.getElementById('raw-sf').value)||0,price:parseFloat(document.getElementById('raw-pr').value)||0});
-  seqs.raw++;saveAll();hideM('rawm');renderRAW();
+  const row={sku:document.getElementById('raw-sk').value.trim()||String(seqs.raw).padStart(3,'0'),name:nm,spec:document.getElementById('raw-sp').value||'',qty:parseInt(document.getElementById('raw-qt').value)||0,safe:parseInt(document.getElementById('raw-sf').value)||0,price:parseFloat(document.getElementById('raw-pr').value)||0};
+  rawData.push(row);seqs.raw++;
+  await dbSaveRaw(row);await saveSeq('raw');
+  hideM('rawm');renderRAW();
 }
-function addFG(){
+async function addFG(){
   const nm=document.getElementById('fg-nm').value.trim();if(!nm)return;
-  fgData.push({sku:document.getElementById('fg-sk').value.trim()||String(seqs.fg).padStart(3,'0'),name:nm,spec:document.getElementById('fg-sp').value||'',qty:parseInt(document.getElementById('fg-qt').value)||0,safe:parseInt(document.getElementById('fg-sf').value)||0,price:parseFloat(document.getElementById('fg-pr').value)||0});
-  seqs.fg++;saveAll();hideM('fgm');renderFG();
+  const row={sku:document.getElementById('fg-sk').value.trim()||String(seqs.fg).padStart(3,'0'),name:nm,spec:document.getElementById('fg-sp').value||'',qty:parseInt(document.getElementById('fg-qt').value)||0,safe:parseInt(document.getElementById('fg-sf').value)||0,price:parseFloat(document.getElementById('fg-pr').value)||0};
+  fgData.push(row);seqs.fg++;
+  await dbSaveFG(row);await saveSeq('fg');
+  hideM('fgm');renderFG();
 }
 
 function exportCSV(){
   const sheets=[
-    {name:'應收帳款',headers:['單號','客戶','發票日','天數','到期日','金額','狀態'],rows:arData.map(r=>[r.id,r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
-    {name:'應付帳款',headers:['單號','供應商','收票日','天數','到期日','金額','狀態'],rows:apData.map(r=>[r.id,r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
-    {name:'供應商',headers:['編號','公司名稱','銀行','分行','代號','帳號','帳號名稱'],rows:suppData.map(r=>[r.id,r.name,r.bank,r.branch,r.code,r.acct,r.acctName])},
-    {name:'原料庫存',headers:['SKU','品名','單位','庫存量','安全量','單價','狀態'],rows:rawData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
-    {name:'成品庫存',headers:['SKU','品名','規格','庫存量','安全量','單價','狀態'],rows:fgData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
+    {name:'應收帳款',headers:['客戶','發票日','天數','到期日','金額','狀態'],rows:arData.map(r=>[r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
+    {name:'應付帳款',headers:['供應商','收票日','天數','到期日','金額','狀態'],rows:apData.map(r=>[r.name,r.invDate,r.terms,r.dueDate,r.amount,r.status])},
+    {name:'供應商',headers:['公司名稱','銀行','分行','代號','帳號','帳號名稱'],rows:suppData.map(r=>[r.name,r.bank,r.branch,r.code,r.acct,r.acctName])},
+    {name:'原料庫存',headers:['編碼','品名','單位','庫存量','安全量','單價','狀態'],rows:rawData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
+    {name:'成品庫存',headers:['編碼','品名','單位','庫存量','安全量','單價','狀態'],rows:fgData.map(r=>[r.sku,r.name,r.spec,r.qty,r.safe,r.price,invSt(r)])},
   ];
   const csv=sheets.map(s=>`=== ${s.name} ===\n`+[s.headers,...s.rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')).join('\n\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
@@ -986,7 +1262,9 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js');
 }
 
-renderSupp();renderAR();renderAP();renderRAW();renderFG();
+// 啟動：從 Supabase 載入資料
+loadAll();
+
 </script>
 </body>
 </html>
