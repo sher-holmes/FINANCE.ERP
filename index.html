@@ -1413,8 +1413,7 @@ function initElecYear(){
   }
   const mo=String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('elec-month').value=mo;
-  renderElec();
-  renderElecChart();
+  // 不在這裡 render，等 loadElec() 完成後才 render
 }
 
 function renderElecChart(){
