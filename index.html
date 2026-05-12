@@ -1335,9 +1335,24 @@ if('serviceWorker' in navigator){
 }
 
 // ── 用電量 ──
-let elecData = JSON.parse(localStorage.getItem('erp_elec')||'{}');
+let elecData = {};
 const elecMonthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
 
+async function loadElec(){
+  try{
+    const url=`${SB_URL}/electricity?select=*&apikey=${SB_KEY}`;
+    const r=await fetch(url,{headers:SB_HDR});
+    if(!r.ok)return;
+    const rows=await r.json();
+    elecData={};
+    rows.forEach(row=>{
+      if(!elecData[row.year])elecData[row.year]={};
+      elecData[row.year][row.month]=row.amount;
+    });
+    renderElec();
+    renderElecChart();
+  }catch(e){console.error('loadElec error',e);}
+}
 
 function renderElec(){
   const year=document.getElementById('elec-year').value;
@@ -1363,17 +1378,20 @@ function clickElecCell(year,month){
   document.getElementById('elec-val').focus();
 }
 
-function saveElec(){
+async function saveElec(){
   const year=document.getElementById('elec-year').value;
   const month=document.getElementById('elec-month').value;
   const val=parseFloat(document.getElementById('elec-val').value);
   if(isNaN(val))return;
   if(!elecData[year])elecData[year]={};
   elecData[year][month]=val;
-  localStorage.setItem('erp_elec',JSON.stringify(elecData));
   document.getElementById('elec-val').value='';
+  // 存到 Supabase
+  try{
+    const url=`${SB_URL}/electricity?apikey=${SB_KEY}`;
+    await fetch(url,{method:'POST',headers:{...SB_HDR,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({year,month,amount:val})});
+  }catch(e){console.error('saveElec error',e);}
   renderElec();
-  // sync chart year and refresh
   document.getElementById('dash-elec-year').value=year;
   renderElecChart();
 }
@@ -1499,6 +1517,7 @@ function renderElecChart(){
 // 啟動：從 Supabase 載入資料
 loadAll();
 initElecYear();
+loadElec();
 
 </script>
 </body>
