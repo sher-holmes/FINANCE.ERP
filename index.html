@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -651,7 +652,9 @@ const SB_HDR={
 
 async function sbGet(table){
   try{
-    const url=`${SB_URL}/${table}?select=*&order=id&apikey=${SB_KEY}`;
+    // raw_inv 和 fg_inv 用 sku 排序，其他用 id
+    const orderCol=(table==='raw_inv'||table==='fg_inv')?'sku':'id';
+    const url=`${SB_URL}/${table}?select=*&order=${orderCol}&apikey=${SB_KEY}`;
     const r=await fetch(url,{headers:SB_HDR});
     if(!r.ok){
       const err=await r.text();
@@ -1203,18 +1206,13 @@ function updateDash(){
   document.getElementById('d-ar').textContent=fmt(arP);
   document.getElementById('d-raw-low').textContent=rl.length;
   document.getElementById('d-fg-low').textContent=fl.length;
-  const all=[...rl.map(r=>({...r,type:'原料'})),...fl.map(r=>({...r,type:'成品'}))];
-  document.getElementById('dash-alerts').innerHTML=all.length===0
-    ?'<div style="font-size:13px;color:var(--txt2);">目前無庫存預警</div>'
-    :all.map(r=>`<div class="alert-row">
-      <i class="ti ti-alert-triangle" style="font-size:16px;color:var(--warn-txt);flex-shrink:0;margin-top:1px;"></i>
-      <div class="alert-txt"><strong>[${r.type}]</strong> ${r.name}<br>庫存 ${fmtN(r.qty)} / 安全量 ${fmtN(r.safe)}（${invSt(r)}）</div>
-    </div>`).join('');
-  document.getElementById('dash-ar').innerHTML=arData.slice(-3).reverse().map(r=>`<div class="list-row">
+  const dashAr=document.getElementById('dash-ar');
+  const dashAp=document.getElementById('dash-ap');
+  if(dashAr) dashAr.innerHTML=arData.slice(-3).reverse().map(r=>`<div class="list-row">
     <div class="list-left"><div class="list-name">${r.name}</div><div class="list-sub">到期 ${r.dueDate}</div></div>
     <div class="list-right"><div class="list-amt">${fmt(r.amount)}</div>${bdg(r.status)}</div>
   </div>`).join('');
-  document.getElementById('dash-ap').innerHTML=apData.slice(-3).reverse().map(r=>`<div class="list-row">
+  if(dashAp) dashAp.innerHTML=apData.slice(-3).reverse().map(r=>`<div class="list-row">
     <div class="list-left"><div class="list-name">${r.name}</div><div class="list-sub">到期 ${r.dueDate}</div></div>
     <div class="list-right"><div class="list-amt">${fmt(r.amount)}</div>${bdg(r.status)}</div>
   </div>`).join('');
