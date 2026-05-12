@@ -1451,7 +1451,9 @@ function renderElecChart(){
   const nonNull=vals.filter(v=>v!=null);
   const maxV=Math.max(...nonNull);
   const minV=Math.min(...nonNull);
-  const range=maxV-minV||1;
+  const padding=(maxV-minV)*0.6||maxV*0.2||1000;
+  const chartMin=Math.max(0,minV-padding);
+  const range=(maxV-chartMin)||1;
 
   // isDark
   const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -1466,7 +1468,7 @@ function renderElecChart(){
   for(let i=0;i<=3;i++){
     const y=padT+chartH*(i/3);
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();
-    const v=maxV-range*(i/3);
+    const v=chartMin+range*(1-i/3);
     ctx.fillStyle=labelColor;ctx.font='10px -apple-system,sans-serif';ctx.textAlign='right';
     ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':Math.round(v),padL-4,y+3);
   }
@@ -1483,7 +1485,7 @@ function renderElecChart(){
   for(let i=0;i<12;i++){
     if(vals[i]!=null){
       const x=padL+i*step;
-      const y=padT+chartH*(1-(vals[i]-minV)/range);
+      const y=padT+chartH*(1-(vals[i]-chartMin)/range);
       points.push({x,y,i});
     }
   }
