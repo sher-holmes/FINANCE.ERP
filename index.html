@@ -159,7 +159,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 .overdue-label{font-size:12px;font-weight:700;color:var(--err-txt);display:flex;align-items:center;gap:6px;}
 .overdue-total{font-size:14px;font-weight:700;color:var(--err-txt);}
 
-.confirm-wrap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:24px;}
+.elec-section{margin-top:0;}
+.elec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.elec-cell{background:var(--bg2);border-radius:var(--rad);padding:10px 12px;}
+.elec-month{font-size:11px;color:var(--txt2);margin-bottom:6px;font-weight:500;}
+.elec-val{font-size:16px;font-weight:600;color:var(--txt);}
+.elec-unit{font-size:11px;color:var(--txt3);margin-left:2px;}
+.elec-empty{color:var(--txt3);font-size:14px;}
+.elec-input-wrap{display:flex;gap:8px;margin-top:12px;align-items:flex-end;}
+.elec-input-wrap .form-group{flex:1;margin:0;}
+.elec-year-sel{font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}.confirm-wrap{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:24px;}
 .confirm-wrap.open{display:flex;}
 .confirm-box{background:var(--bg);border-radius:20px;padding:28px 20px 20px;width:100%;max-width:320px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
 .confirm-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
@@ -171,7 +180,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 .confirm-btn{width:100%;padding:13px;border-radius:var(--rad);font-size:15px;font-weight:600;cursor:pointer;border:none;}
 .confirm-btn.danger{background:#c0392b;color:#fff;}
 .confirm-btn.primary{background:#185fa5;color:#fff;}
-.confirm-btn.cancel{background:var(--bg2);color:var(--txt);}
+.elec-chart-wrap{width:100%;overflow-x:auto;margin-top:4px;}
+.elec-chart{width:100%;min-height:160px;display:block;}
+.chart-year-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.chart-year-sel{font-size:13px;padding:6px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);}
 </style>
 </head>
 <body>
@@ -197,8 +209,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="mc"><div class="mc-lbl">成品預警</div><div class="mc-val cr" id="d-fg-low">0</div><div class="mc-sub cr">需補貨</div></div>
     </div>
     <div class="panel">
-      <div class="section-hd">庫存預警</div>
-      <div id="dash-alerts"></div>
+      <div class="chart-year-row">
+        <div class="section-hd" style="margin:0;">每月電費</div>
+        <select class="chart-year-sel" id="dash-elec-year" onchange="renderElecChart()"></select>
+      </div>
+      <div class="elec-chart-wrap">
+        <canvas class="elec-chart" id="elec-chart" height="160"></canvas>
+      </div>
+      <div id="elec-chart-empty" style="text-align:center;padding:32px 0;color:var(--txt2);font-size:13px;display:none;">尚未輸入電費資料<br><span style="font-size:12px;color:var(--txt3);">前往庫存頁輸入每月電費</span></div>
     </div>
     <div class="panel">
       <div class="section-hd">近期應收</div>
@@ -284,6 +302,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       </div>
       <input type="text" id="fg-s" placeholder="搜尋成品..." oninput="renderFG()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);margin-bottom:12px;">
       <div id="fg-list"></div>
+    </div>
+
+    <!-- 用電量 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          每月電費
+        </div>
+        <select class="elec-year-sel" id="elec-year" onchange="renderElec()"></select>
+      </div>
+      <div class="elec-input-wrap">
+        <div class="form-group">
+          <label>月份</label>
+          <select id="elec-month" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
+            <option value="01">一月</option><option value="02">二月</option><option value="03">三月</option>
+            <option value="04">四月</option><option value="05">五月</option><option value="06">六月</option>
+            <option value="07">七月</option><option value="08">八月</option><option value="09">九月</option>
+            <option value="10">十月</option><option value="11">十一月</option><option value="12">十二月</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>電費（元）</label>
+          <input type="number" id="elec-val" placeholder="0" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
+        </div>
+        <button class="btn-add" onclick="saveElec()" style="flex-shrink:0;margin-bottom:0;" title="儲存">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+      </div>
+      <div class="elec-grid" id="elec-grid"></div>
     </div>
   </div>
 </div>
@@ -930,7 +978,7 @@ function renderAR(){
     }
 
     // 月份分組
-    const CHEVRON=`<svg class="month-chevron open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    const CHEVRON=`<svg class="month-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
     Object.keys(groups).sort().forEach((key,gi)=>{
       const items=groups[key];
       const monthTotal=items.reduce((a,r)=>a+r.amount,0);
@@ -948,7 +996,7 @@ function renderAR(){
             ${CHEVRON}
           </div>
         </div>
-        <div class="month-body" id="${gid}">
+        <div class="month-body collapsed" id="${gid}">
           ${items.map(arRow).join('')}
         </div>
       </div>`;
@@ -1028,7 +1076,7 @@ function renderAP(){
     }
 
     // Monthly groups
-    const CHEVRON=`<svg class="month-chevron open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    const CHEVRON=`<svg class="month-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
     Object.keys(groups).sort().forEach((key,gi)=>{
       const items=groups[key];
       const monthTotal=items.reduce((a,r)=>a+r.amount,0);
@@ -1046,7 +1094,7 @@ function renderAP(){
             ${CHEVRON}
           </div>
         </div>
-        <div class="month-body" id="${gid}">
+        <div class="month-body collapsed" id="${gid}">
           ${items.map(apRow).join('')}
         </div>
       </div>`;
@@ -1262,8 +1310,171 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js');
 }
 
+// ── 用電量 ──
+let elecData = JSON.parse(localStorage.getItem('erp_elec')||'{}');
+const elecMonthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+
+function renderElec(){
+  const year=document.getElementById('elec-year').value;
+  const grid=document.getElementById('elec-grid');
+  const yearData=elecData[year]||{};
+  let html='';
+  for(let m=1;m<=12;m++){
+    const key=String(m).padStart(2,'0');
+    const val=yearData[key];
+    html+=`<div class="elec-cell" onclick="clickElecCell('${year}','${key}')">
+      <div class="elec-month">${elecMonthNames[m-1]}</div>
+      <div class="elec-val">${val!=null?val.toLocaleString():'<span class="elec-empty">—</span>'}${val!=null?'<span class="elec-unit">元</span>':''}</div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function clickElecCell(year,month){
+  document.getElementById('elec-year').value=year;
+  document.getElementById('elec-month').value=month;
+  const val=(elecData[year]||{})[month];
+  document.getElementById('elec-val').value=val!=null?val:'';
+  document.getElementById('elec-val').focus();
+}
+
+function saveElec(){
+  const year=document.getElementById('elec-year').value;
+  const month=document.getElementById('elec-month').value;
+  const val=parseFloat(document.getElementById('elec-val').value);
+  if(isNaN(val))return;
+  if(!elecData[year])elecData[year]={};
+  elecData[year][month]=val;
+  localStorage.setItem('erp_elec',JSON.stringify(elecData));
+  document.getElementById('elec-val').value='';
+  renderElec();
+  // sync chart year and refresh
+  document.getElementById('dash-elec-year').value=year;
+  renderElecChart();
+}
+
+// ── 電費折線圖 ──
+function initElecYear(){
+  const sel=document.getElementById('elec-year');
+  const sel2=document.getElementById('dash-elec-year');
+  const now=new Date();
+  sel.innerHTML='';sel2.innerHTML='';
+  for(let y=now.getFullYear()+1;y>=now.getFullYear()-3;y--){
+    const o1=document.createElement('option');
+    o1.value=y;o1.textContent=y+'年';
+    if(y===now.getFullYear())o1.selected=true;
+    sel.appendChild(o1);
+    const o2=o1.cloneNode(true);
+    if(y===now.getFullYear())o2.selected=true;
+    sel2.appendChild(o2);
+  }
+  const mo=String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('elec-month').value=mo;
+  renderElec();
+  renderElecChart();
+}
+
+function renderElecChart(){
+  const year=document.getElementById('dash-elec-year').value;
+  const yearData=elecData[year]||{};
+  const labels=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+  const vals=[];
+  let hasData=false;
+  for(let m=1;m<=12;m++){
+    const key=String(m).padStart(2,'0');
+    const v=yearData[key]!=null?yearData[key]:null;
+    vals.push(v);
+    if(v!=null)hasData=true;
+  }
+
+  const canvas=document.getElementById('elec-chart');
+  const emptyEl=document.getElementById('elec-chart-empty');
+  if(!hasData){canvas.style.display='none';emptyEl.style.display='block';return;}
+  canvas.style.display='block';emptyEl.style.display='none';
+
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth||300;
+  const H=160;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  const padL=48,padR=12,padT=16,padB=32;
+  const chartW=W-padL-padR;
+  const chartH=H-padT-padB;
+
+  // compute min/max from non-null
+  const nonNull=vals.filter(v=>v!=null);
+  const maxV=Math.max(...nonNull);
+  const minV=Math.min(...nonNull);
+  const range=maxV-minV||1;
+
+  // isDark
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const gridColor=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)';
+  const labelColor=isDark?'#8e8e93':'#6b7280';
+  const lineColor='#0a84ff';
+  const dotColor='#0a84ff';
+  const fillColor=isDark?'rgba(10,132,255,0.15)':'rgba(10,132,255,0.1)';
+
+  // grid lines (4 lines)
+  ctx.strokeStyle=gridColor;ctx.lineWidth=0.5;
+  for(let i=0;i<=3;i++){
+    const y=padT+chartH*(i/3);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();
+    const v=maxV-range*(i/3);
+    ctx.fillStyle=labelColor;ctx.font='10px -apple-system,sans-serif';ctx.textAlign='right';
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':Math.round(v),padL-4,y+3);
+  }
+
+  // x labels
+  ctx.fillStyle=labelColor;ctx.font='10px -apple-system,sans-serif';ctx.textAlign='center';
+  const step=chartW/11;
+  for(let i=0;i<12;i++){
+    ctx.fillText(labels[i]+'月',padL+i*step,H-padB+14);
+  }
+
+  // build points
+  const points=[];
+  for(let i=0;i<12;i++){
+    if(vals[i]!=null){
+      const x=padL+i*step;
+      const y=padT+chartH*(1-(vals[i]-minV)/range);
+      points.push({x,y,i});
+    }
+  }
+  if(points.length<1)return;
+
+  // fill area
+  ctx.beginPath();
+  ctx.moveTo(points[0].x,padT+chartH);
+  points.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(points[points.length-1].x,padT+chartH);
+  ctx.closePath();ctx.fillStyle=fillColor;ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle=lineColor;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';
+  points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+
+  // dots + value labels
+  points.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.strokeStyle=dotColor;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=labelColor;ctx.font='bold 10px -apple-system,sans-serif';ctx.textAlign='center';
+    const label=vals[p.i]>=1000?(vals[p.i]/1000).toFixed(1)+'k':Math.round(vals[p.i]);
+    ctx.fillText(label,p.x,p.y-8);
+  });
+}
+
 // 啟動：從 Supabase 載入資料
 loadAll();
+initElecYear();
 
 </script>
 </body>
