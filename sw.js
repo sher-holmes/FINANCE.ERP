@@ -1,4 +1,4 @@
-const CACHE = 'erp-v1';
+const CACHE = 'erp-v5';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -14,7 +14,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  // 永遠從網路拿最新版，不用快取
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
 });
