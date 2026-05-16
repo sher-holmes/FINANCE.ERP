@@ -313,65 +313,67 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
     <div id="ap-list"></div>
   </div>
 
-  <!-- 庫存 -->
+  <!-- 基本開銷 -->
   <div id="inv" class="sec">
     <div class="metrics">
-      <div class="mc"><div class="mc-lbl">原料品項</div><div class="mc-val" id="inv-rsku">0</div></div>
-      <div class="mc"><div class="mc-lbl">原料庫存值</div><div class="mc-val" id="inv-rval">$0</div></div>
-      <div class="mc"><div class="mc-lbl">成品品項</div><div class="mc-val" id="inv-fsku">0</div></div>
-      <div class="mc"><div class="mc-lbl">成品庫存值</div><div class="mc-val" id="inv-fval">$0</div></div>
-    </div>
-    <div class="panel">
-      <div class="panel-hd">
-        <div class="panel-title"><i class="ti ti-package" style="color:#854f0b;"></i> 原料庫存 <span class="badge ba" id="raw-wb" style="display:none;"></span></div>
-        <div class="acts">
-          <select id="raw-f" onchange="renderRAW()" style="font-size:12px;padding:5px 6px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);"><option value="">全部</option><option value="正常">正常</option><option value="低庫存">低庫存</option><option value="缺貨">缺貨</option></select>
-          <button class="btn-add" onclick="showM('rawm')" aria-label="新增原料" style="width:30px;height:30px;font-size:18px;">+</button>
-        </div>
-      </div>
-      <input type="text" id="raw-s" placeholder="搜尋原料..." oninput="renderRAW()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);margin-bottom:12px;">
-      <div id="raw-list"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-hd">
-        <div class="panel-title"><i class="ti ti-box" style="color:#3b6d11;"></i> 成品庫存 <span class="badge br" id="fg-wb" style="display:none;"></span></div>
-        <div class="acts">
-          <select id="fg-f" onchange="renderFG()" style="font-size:12px;padding:5px 6px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);"><option value="">全部</option><option value="正常">正常</option><option value="低庫存">低庫存</option><option value="缺貨">缺貨</option></select>
-          <button class="btn-add" onclick="showM('fgm')" aria-label="新增成品" style="width:30px;height:30px;font-size:18px;">+</button>
-        </div>
-      </div>
-      <input type="text" id="fg-s" placeholder="搜尋成品..." oninput="renderFG()" style="width:100%;font-size:13px;padding:8px 10px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);margin-bottom:12px;">
-      <div id="fg-list"></div>
+      <div class="mc"><div class="mc-lbl">本月總開銷</div><div class="mc-val cr" id="exp-total">$0</div></div>
+      <div class="mc"><div class="mc-lbl">本年累計</div><div class="mc-val" id="exp-year">$0</div></div>
+      <div class="mc"><div class="mc-lbl">最高項目</div><div class="mc-val ca" id="exp-top-val">—</div><div class="mc-sub" id="exp-top-cat"></div></div>
+      <div class="mc"><div class="mc-lbl">已記錄月份</div><div class="mc-val" id="exp-months">0 月</div></div>
     </div>
 
-    <!-- 用電量 -->
+    <!-- 新增開銷 -->
     <div class="panel">
       <div class="panel-hd">
         <div class="panel-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          每月電費
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#185fa5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          新增開銷
         </div>
-        <select class="elec-year-sel" id="elec-year" onchange="renderElec()"></select>
       </div>
-      <div class="elec-input-wrap">
+      <div class="form-row">
+        <div class="form-group">
+          <label>年份</label>
+          <select id="exp-year-sel" class="elec-year-sel" style="width:100%;font-size:15px;padding:10px 12px;min-height:46px;"></select>
+        </div>
         <div class="form-group">
           <label>月份</label>
-          <select id="elec-month" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
+          <select id="exp-month-sel" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
             <option value="01">一月</option><option value="02">二月</option><option value="03">三月</option>
             <option value="04">四月</option><option value="05">五月</option><option value="06">六月</option>
             <option value="07">七月</option><option value="08">八月</option><option value="09">九月</option>
             <option value="10">十月</option><option value="11">十一月</option><option value="12">十二月</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>電費（元）</label>
-          <input type="number" id="elec-val" placeholder="0" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
-        </div>
-        <button class="btn-add" onclick="saveElec()" style="flex-shrink:0;margin-bottom:0;" title="儲存">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
       </div>
-      <div class="elec-grid" id="elec-grid"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>種類</label>
+          <select id="exp-cat" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238e8e93\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 10px center;">
+            <option value="廠租">廠租</option>
+            <option value="電費">電費</option>
+            <option value="水費">水費</option>
+            <option value="電話費">電話費</option>
+            <option value="勞健保費">勞健保費</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>金額（元）</label>
+          <input type="number" id="exp-val" placeholder="0" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);">
+        </div>
+      </div>
+      <button class="btn-full btn-primary" onclick="saveExpense()" style="margin-top:4px;">儲存</button>
+    </div>
+
+    <!-- 開銷總覽表格 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#854f0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          開銷總覽
+        </div>
+        <select class="elec-year-sel" id="exp-view-year" onchange="renderExpenses()"></select>
+      </div>
+      <div id="exp-table"></div>
     </div>
   </div>
 </div>
@@ -382,7 +384,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
   <button class="nav-item" onclick="go('supp')" id="nav-supp"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>供應商</button>
   <button class="nav-item" onclick="go('ar')" id="nav-ar"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/><line x1="5" y1="5" x2="19" y2="5"/></svg>應收</button>
   <button class="nav-item" onclick="go('ap')" id="nav-ap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/><line x1="5" y1="19" x2="19" y2="19"/></svg>應付</button>
-  <button class="nav-item" onclick="go('inv')" id="nav-inv"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>庫存</button>
+  <button class="nav-item" onclick="go('inv')" id="nav-inv"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>開銷</button>
 </nav>
 
 <!-- 供應商 Modal -->
@@ -1492,97 +1494,151 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js');
 }
 
-// ── 用電量 ──
-let elecData = {};
-const elecMonthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+// ── 基本開銷 ──
+const EXP_CATS=['廠租','電費','水費','電話費','勞健保費'];
+const EXP_COLORS={'廠租':'#185fa5','電費':'#f5a623','水費':'#0f6e56','電話費':'#3c3489','勞健保費':'#a32d2d'};
+let expData={}; // {year: {month: {cat: amount}}}
 
 async function loadElec(){
   try{
-    const url=`${SB_URL}/rest/v1/electricity?select=*`;
-    const r=await fetch(url,{headers:sbHeaders()});
+    const r=await fetch(`${SB_URL}/rest/v1/electricity?select=*`,{headers:sbHeaders()});
     if(!r.ok)return;
     const rows=await r.json();
-    elecData={};
+    expData={};
     rows.forEach(row=>{
-      if(!elecData[row.year])elecData[row.year]={};
-      elecData[row.year][row.month]=row.amount;
+      if(!expData[row.year])expData[row.year]={};
+      if(!expData[row.year][row.month])expData[row.year][row.month]={};
+      // Support old single-amount format and new category format
+      if(row.category){
+        expData[row.year][row.month][row.category]=row.amount;
+      } else {
+        expData[row.year][row.month]['電費']=row.amount;
+      }
     });
-    renderElec();
+    renderExpenses();
     renderElecChart();
   }catch(e){console.error('loadElec error',e);}
 }
 
-function renderElec(){
-  const year=document.getElementById('elec-year').value;
-  const grid=document.getElementById('elec-grid');
-  const yearData=elecData[year]||{};
-  let html='';
-  for(let m=1;m<=12;m++){
-    const key=String(m).padStart(2,'0');
-    const val=yearData[key];
-    html+=`<div class="elec-cell" onclick="clickElecCell('${year}','${key}')">
-      <div class="elec-month">${elecMonthNames[m-1]}</div>
-      <div class="elec-val">${val!=null?val.toLocaleString():'<span class="elec-empty">—</span>'}${val!=null?'<span class="elec-unit">元</span>':''}</div>
-    </div>`;
-  }
-  grid.innerHTML=html;
+function initElecYear(){
+  const now=new Date();
+  ['exp-year-sel','exp-view-year','dash-elec-year'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    sel.innerHTML='';
+    for(let y=now.getFullYear()+1;y>=now.getFullYear()-3;y--){
+      const o=document.createElement('option');
+      o.value=y;o.textContent=y+'年';
+      if(y===now.getFullYear())o.selected=true;
+      sel.appendChild(o);
+    }
+  });
+  const mo=String(now.getMonth()+1).padStart(2,'0');
+  const msel=document.getElementById('exp-month-sel');
+  if(msel)msel.value=mo;
 }
 
-function clickElecCell(year,month){
-  document.getElementById('elec-year').value=year;
-  document.getElementById('elec-month').value=month;
-  const val=(elecData[year]||{})[month];
-  document.getElementById('elec-val').value=val!=null?val:'';
-  document.getElementById('elec-val').focus();
-}
-
-async function saveElec(){
-  const year=document.getElementById('elec-year').value;
-  const month=document.getElementById('elec-month').value;
-  const val=parseFloat(document.getElementById('elec-val').value);
-  if(isNaN(val))return;
-  if(!elecData[year])elecData[year]={};
-  elecData[year][month]=val;
-  document.getElementById('elec-val').value='';
-  // 存到 Supabase
+async function saveExpense(){
+  const year=document.getElementById('exp-year-sel').value;
+  const month=document.getElementById('exp-month-sel').value;
+  const cat=document.getElementById('exp-cat').value;
+  const val=parseFloat(document.getElementById('exp-val').value);
+  if(isNaN(val)||val<=0){showToast('請輸入金額');return;}
+  if(!expData[year])expData[year]={};
+  if(!expData[year][month])expData[year][month]={};
+  expData[year][month][cat]=val;
+  document.getElementById('exp-val').value='';
+  // 存到 Supabase (upsert by year+month+category)
   try{
-    const url=`${SB_URL}/rest/v1/electricity`;
-    await fetch(url,{method:'POST',headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({year,month,amount:val})});
-  }catch(e){console.error('saveElec error',e);}
-  renderElec();
-  document.getElementById('dash-elec-year').value=year;
+    await fetch(`${SB_URL}/rest/v1/electricity`,{
+      method:'POST',
+      headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({year,month,amount:val,category:cat})
+    });
+    showToast(`${cat} 已儲存`);
+  }catch(e){console.error('saveExpense error',e);}
+  renderExpenses();
   renderElecChart();
 }
 
-// ── 電費折線圖 ──
-function initElecYear(){
-  const sel=document.getElementById('elec-year');
-  const sel2=document.getElementById('dash-elec-year');
+function renderExpenses(){
+  const year=document.getElementById('exp-view-year')?.value||new Date().getFullYear().toString();
+  const yearData=expData[year]||{};
+  const monthNames=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+
+  // Update metrics
   const now=new Date();
-  sel.innerHTML='';sel2.innerHTML='';
-  for(let y=now.getFullYear()+1;y>=now.getFullYear()-3;y--){
-    const o1=document.createElement('option');
-    o1.value=y;o1.textContent=y+'年';
-    if(y===now.getFullYear())o1.selected=true;
-    sel.appendChild(o1);
-    const o2=o1.cloneNode(true);
-    if(y===now.getFullYear())o2.selected=true;
-    sel2.appendChild(o2);
+  const curMonth=String(now.getMonth()+1).padStart(2,'0');
+  const curYear=now.getFullYear().toString();
+  const curMonthData=(expData[curYear]||{})[curMonth]||{};
+  const monthTotal=Object.values(curMonthData).reduce((a,v)=>a+v,0);
+  document.getElementById('exp-total').textContent=fmt(monthTotal);
+
+  let yearTotal=0;
+  Object.values(expData[curYear]||{}).forEach(m=>Object.values(m).forEach(v=>yearTotal+=v));
+  document.getElementById('exp-year').textContent=fmt(yearTotal);
+
+  let topCat='—',topVal=0;
+  Object.entries(curMonthData).forEach(([k,v])=>{if(v>topVal){topVal=v;topCat=k;}});
+  document.getElementById('exp-top-val').textContent=topVal>0?fmt(topVal):'—';
+  document.getElementById('exp-top-cat').textContent=topVal>0?topCat:'';
+
+  const recordedMonths=Object.keys(yearData).length;
+  document.getElementById('exp-months').textContent=recordedMonths+' 月';
+
+  // Build table
+  const el=document.getElementById('exp-table');
+  if(!el)return;
+
+  // Check if any data
+  const hasData=Object.keys(yearData).length>0;
+  if(!hasData){el.innerHTML='<div class="empty">尚無開銷資料</div>';return;}
+
+  let html=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr style="border-bottom:1px solid var(--bdr);">
+      <th style="text-align:left;padding:6px 4px;color:var(--txt2);font-weight:500;">月份</th>`;
+  EXP_CATS.forEach(c=>{html+=`<th style="text-align:right;padding:6px 4px;color:${EXP_COLORS[c]};font-weight:500;">${c}</th>`;});
+  html+=`<th style="text-align:right;padding:6px 4px;color:var(--txt2);font-weight:600;">合計</th></tr></thead><tbody>`;
+
+  let colTotals={};EXP_CATS.forEach(c=>colTotals[c]=0);
+  let grandTotal=0;
+
+  for(let m=1;m<=12;m++){
+    const key=String(m).padStart(2,'0');
+    const mdata=yearData[key]||{};
+    const rowTotal=Object.values(mdata).reduce((a,v)=>a+v,0);
+    if(rowTotal===0)continue;
+    grandTotal+=rowTotal;
+    html+=`<tr style="border-bottom:0.5px solid var(--bdr);">
+      <td style="padding:8px 4px;font-weight:500;">${monthNames[m-1]}月</td>`;
+    EXP_CATS.forEach(c=>{
+      const v=mdata[c]||0;
+      colTotals[c]+=v;
+      html+=`<td style="text-align:right;padding:8px 4px;color:${v>0?'var(--txt)':'var(--txt3)'};">${v>0?fmt(v):'—'}</td>`;
+    });
+    html+=`<td style="text-align:right;padding:8px 4px;font-weight:600;">${fmt(rowTotal)}</td></tr>`;
   }
-  const mo=String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('elec-month').value=mo;
-  // 不在這裡 render，等 loadElec() 完成後才 render
+
+  // Total row
+  html+=`<tr style="border-top:1px solid var(--bdr);background:var(--bg2);">
+    <td style="padding:8px 4px;font-weight:700;">合計</td>`;
+  EXP_CATS.forEach(c=>{html+=`<td style="text-align:right;padding:8px 4px;font-weight:600;color:${EXP_COLORS[c]};">${colTotals[c]>0?fmt(colTotals[c]):'—'}</td>`;});
+  html+=`<td style="text-align:right;padding:8px 4px;font-weight:700;color:var(--err-txt);">${fmt(grandTotal)}</td></tr>`;
+  html+=`</tbody></table></div>`;
+  el.innerHTML=html;
 }
 
 function renderElecChart(){
   const year=document.getElementById('dash-elec-year').value;
-  const yearData=elecData[year]||{};
+  const yearData=expData[year]||{};
   const labels=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
   const vals=[];
   let hasData=false;
   for(let m=1;m<=12;m++){
     const key=String(m).padStart(2,'0');
-    const v=yearData[key]!=null?yearData[key]:null;
+    const mdata=yearData[key]||{};
+    const total=Object.values(mdata).reduce((a,v)=>a+v,0)||0;
+    const v=total>0?total:null;
     vals.push(v);
     if(v!=null)hasData=true;
   }
