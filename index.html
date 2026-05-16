@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <link rel="manifest" href="manifest.json">
-<title>ERP 管理系統</title>
+<title>FINANCE ERP</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -245,8 +245,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
     <div class="metrics">
       <div class="mc"><div class="mc-lbl">供應商數</div><div class="mc-val" id="d-supp">0</div></div>
       <div class="mc"><div class="mc-lbl">應收待收</div><div class="mc-val" id="d-ar">$0</div><div class="mc-sub ca">待追蹤</div></div>
-      <div class="mc"><div class="mc-lbl">原料預警</div><div class="mc-val cr" id="d-raw-low">0</div><div class="mc-sub cr">需補貨</div></div>
-      <div class="mc"><div class="mc-lbl">成品預警</div><div class="mc-val cr" id="d-fg-low">0</div><div class="mc-sub cr">需補貨</div></div>
+      <div class="mc"><div class="mc-lbl">當月待付款</div><div class="mc-val cr" id="d-raw-low">0</div><div class="mc-sub cr">筆</div></div>
+      <div class="mc"><div class="mc-lbl">當月應付金額</div><div class="mc-val ca" id="d-fg-low">$0</div></div>
     </div>
     <div class="panel">
       <div class="chart-year-row">
@@ -256,7 +256,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
       <div class="elec-chart-wrap">
         <canvas class="elec-chart" id="elec-chart" height="160"></canvas>
       </div>
-      <div id="elec-chart-empty" style="text-align:center;padding:32px 0;color:var(--txt2);font-size:13px;display:none;">尚未輸入電費資料<br><span style="font-size:12px;color:var(--txt3);">前往庫存頁輸入每月電費</span></div>
+      <div id="elec-chart-empty" style="text-align:center;padding:32px 0;color:var(--txt2);font-size:13px;display:none;">尚未輸入電費資料<br><span style="font-size:12px;color:var(--txt3);">前往開銷頁輸入</span></div>
+    </div>
+    <div class="panel">
+      <div class="chart-year-row">
+        <div class="section-hd" style="margin:0;">每月應收</div>
+        <select class="chart-year-sel" id="dash-ar-year" onchange="renderARChart()"></select>
+      </div>
+      <div class="elec-chart-wrap">
+        <canvas class="elec-chart" id="ar-chart" height="160"></canvas>
+      </div>
+      <div id="ar-chart-empty" style="text-align:center;padding:32px 0;color:var(--txt2);font-size:13px;display:none;">尚無應收資料</div>
     </div>
     <div class="panel">
       <div class="section-hd">近期應收</div>
@@ -903,6 +913,7 @@ async function loadAll(){
   }
   showLoading(false);
   renderSupp();renderAR();renderAP();renderRAW();renderFG();
+  renderARChart();
 }
 
 function showToast(msg){
@@ -1362,12 +1373,20 @@ function renderFG(){
 
 function updateDash(){
   const arP=arData.filter(r=>r.status!=='已收款').reduce((a,r)=>a+r.amount,0);
-  const rl=rawData.filter(r=>invSt(r)!=='正常');
-  const fl=fgData.filter(r=>invSt(r)!=='正常');
   document.getElementById('d-supp').textContent=suppData.length;
   document.getElementById('d-ar').textContent=fmt(arP);
-  document.getElementById('d-raw-low').textContent=rl.length;
-  document.getElementById('d-fg-low').textContent=fl.length;
+
+  // 當月待付款筆數和金額
+  const now=new Date();
+  const curY=now.getFullYear().toString();
+  const curM=String(now.getMonth()+1).padStart(2,'0');
+  const curMonthAP=apData.filter(r=>{
+    if(r.status==='已付款')return false;
+    return r.dueDate&&r.dueDate.startsWith(`${curY}-${curM}`);
+  });
+  document.getElementById('d-raw-low').textContent=curMonthAP.length;
+  document.getElementById('d-fg-low').textContent=fmt(curMonthAP.reduce((a,r)=>a+r.amount,0));
+
   const dashAr=document.getElementById('dash-ar');
   const dashAp=document.getElementById('dash-ap');
   if(dashAr) dashAr.innerHTML=arData.slice(-3).reverse().map(r=>`<div class="list-row">
@@ -1380,7 +1399,97 @@ function updateDash(){
   </div>`).join('');
 }
 
-const pageTitles={dash:'總覽',supp:'供應商資料',ar:'應收帳款',ap:'應付帳款',inv:'庫存管理'};
+function renderARChart(){
+  const year=document.getElementById('dash-ar-year')?.value||new Date().getFullYear().toString();
+  const canvas=document.getElementById('ar-chart');
+  const emptyEl=document.getElementById('ar-chart-empty');
+  if(!canvas)return;
+
+  // Group AR by due month
+  const monthTotals={};
+  arData.forEach(r=>{
+    if(!r.dueDate)return;
+    const [y,m]=r.dueDate.split('-');
+    if(y!==year)return;
+    if(!monthTotals[m])monthTotals[m]=0;
+    monthTotals[m]+=r.amount;
+  });
+
+  const vals=[];let hasData=false;
+  for(let m=1;m<=12;m++){
+    const key=String(m).padStart(2,'0');
+    const v=monthTotals[key]||null;
+    vals.push(v);
+    if(v!=null)hasData=true;
+  }
+
+  if(!hasData){canvas.style.display='none';emptyEl.style.display='block';return;}
+  canvas.style.display='block';emptyEl.style.display='none';
+
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth||300;
+  const H=160;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+
+  const padL=48,padR=12,padT=16,padB=32;
+  const chartW=W-padL-padR,chartH=H-padT-padB;
+  const nonNull=vals.filter(v=>v!=null);
+  const maxV=Math.max(...nonNull);
+  const minV=Math.min(...nonNull);
+  const padding=(maxV-minV)*0.6||maxV*0.2||1000;
+  const chartMin=Math.max(0,minV-padding);
+  const range=(maxV-chartMin)||1;
+
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const gridColor=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)';
+  const labelColor=isDark?'#8e8e93':'#6b7280';
+  const lineColor='#30d158';
+  const fillColor=isDark?'rgba(48,209,88,0.15)':'rgba(48,209,88,0.1)';
+
+  ctx.strokeStyle=gridColor;ctx.lineWidth=0.5;
+  for(let i=0;i<=3;i++){
+    const y=padT+chartH*(i/3);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();
+    const v=chartMin+range*(1-i/3);
+    ctx.fillStyle=labelColor;ctx.font='10px -apple-system,sans-serif';ctx.textAlign='right';
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':Math.round(v),padL-4,y+3);
+  }
+  const step=chartW/11;
+  ctx.fillStyle=labelColor;ctx.font='10px -apple-system,sans-serif';ctx.textAlign='center';
+  for(let i=0;i<12;i++)ctx.fillText((i+1)+'月',padL+i*step,H-padB+14);
+
+  const pts=[];
+  for(let i=0;i<12;i++){
+    if(vals[i]!=null){
+      const x=padL+i*step;
+      const y=padT+chartH*(1-(vals[i]-chartMin)/range);
+      pts.push({x,y,v:vals[i]});
+    }
+  }
+  if(!pts.length)return;
+
+  ctx.beginPath();ctx.moveTo(pts[0].x,padT+chartH);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,padT+chartH);
+  ctx.closePath();ctx.fillStyle=fillColor;ctx.fill();
+
+  ctx.beginPath();ctx.strokeStyle=lineColor;ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);
+    ctx.fillStyle=isDark?'#1c1c1e':'#fff';ctx.fill();
+    ctx.strokeStyle=lineColor;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=labelColor;ctx.font='bold 10px -apple-system,sans-serif';ctx.textAlign='center';
+    const lbl=p.v>=1000?(p.v/1000).toFixed(1)+'k':Math.round(p.v);
+    ctx.fillText(lbl,p.x,p.y-8);
+  });
+}
+
+const pageTitles={dash:'總覽',supp:'供應商資料',ar:'應收帳款',ap:'應付帳款',inv:'開銷管理'};
 function go(id){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
@@ -1523,7 +1632,7 @@ async function loadElec(){
 }
 
 function initElecYear(){
-  ['exp-year-sel','exp-view-year','dash-elec-year'].forEach(id=>{
+  ['exp-year-sel','exp-view-year','dash-elec-year','dash-ar-year'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
     sel.innerHTML='';
