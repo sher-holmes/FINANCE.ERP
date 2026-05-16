@@ -812,7 +812,7 @@ async function sbGet(table){
   try{
     // raw_inv 和 fg_inv 用 sku 排序，其他用 id
     const orderCol=(table==='raw_inv'||table==='fg_inv')?'sku':'id';
-    const url=`${SB_URL}/rest/v1/${table}?select=*&order=${orderCol}&apikey=${SB_KEY}`;
+    const url=`${SB_URL}/rest/v1/${table}?select=*&order=${orderCol}`;
     const r=await fetch(url,{headers:sbHeaders()});
     if(!r.ok){
       const err=await r.text();
@@ -827,14 +827,14 @@ async function sbGet(table){
 }
 async function sbUpsert(table,row){
   try{
-    const url=`${SB_URL}/rest/v1/${table}?apikey=${SB_KEY}`;
+    const url=`${SB_URL}/rest/v1/${table}`;
     await fetch(url,{method:'POST',headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(row)});
   }catch(e){console.error(e);}
 }
 async function sbDelete(table,col,val){
   try{
-    const url=`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}&apikey=${SB_KEY}`;
-    await fetch(url,{method:'DELETE',headers:SB_HDR});
+    const url=`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`;
+    await fetch(url,{method:'DELETE',headers:sbHeaders()});
   }catch(e){console.error(e);}
 }
 async function sbGetSeqs(){
@@ -1498,7 +1498,7 @@ const elecMonthNames=['一月','二月','三月','四月','五月','六月','七
 
 async function loadElec(){
   try{
-    const url=`${SB_URL}/rest/v1/electricity?select=*&apikey=${SB_KEY}`;
+    const url=`${SB_URL}/rest/v1/electricity?select=*`;
     const r=await fetch(url,{headers:sbHeaders()});
     if(!r.ok)return;
     const rows=await r.json();
@@ -1546,7 +1546,7 @@ async function saveElec(){
   document.getElementById('elec-val').value='';
   // 存到 Supabase
   try{
-    const url=`${SB_URL}/rest/v1/electricity?apikey=${SB_KEY}`;
+    const url=`${SB_URL}/rest/v1/electricity`;
     await fetch(url,{method:'POST',headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({year,month,amount:val})});
   }catch(e){console.error('saveElec error',e);}
   renderElec();
