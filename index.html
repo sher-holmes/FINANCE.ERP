@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <link rel="manifest" href="manifest.json">
-<title>FINANCE ERP</title>
+<title>ERP 管理系統</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -1314,10 +1314,10 @@ function renderAP(){
 }
 
 function renderRAW(){
-  const s=document.getElementById('raw-s').value.toLowerCase();
-  const f=document.getElementById('raw-f').value;
+  const el=document.getElementById('raw-list');if(!el)return;
+  const s=document.getElementById('raw-s')?.value.toLowerCase()||'';
+  const f=document.getElementById('raw-f')?.value||'';
   const rows=rawData.filter(r=>(!s||(r.name+r.sku).toLowerCase().includes(s))&&(!f||invSt(r)===f));
-  const el=document.getElementById('raw-list');
   if(!rows.length){el.innerHTML='<div class="empty">無符合項目</div>';return;}
   el.innerHTML=rows.map(r=>`<div class="list-row">
     <div class="list-left">
@@ -1335,18 +1335,18 @@ function renderRAW(){
   </div>`).join('');
   const val=rawData.reduce((a,r)=>a+r.qty*r.price,0);
   const lc=rawData.filter(r=>invSt(r)!=='正常').length;
-  document.getElementById('inv-rsku').textContent=rawData.length;
-  document.getElementById('inv-rval').textContent=fmt(val);
+  const rsku=document.getElementById('inv-rsku');if(rsku)rsku.textContent=rawData.length;
+  const rval=document.getElementById('inv-rval');if(rval)rval.textContent=fmt(val);
   const wb=document.getElementById('raw-wb');
-  wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';
+  if(wb){wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';}
   updateDash();
 }
 
 function renderFG(){
-  const s=document.getElementById('fg-s').value.toLowerCase();
-  const f=document.getElementById('fg-f').value;
+  const el=document.getElementById('fg-list');if(!el)return;
+  const s=document.getElementById('fg-s')?.value.toLowerCase()||'';
+  const f=document.getElementById('fg-f')?.value||'';
   const rows=fgData.filter(r=>(!s||(r.name+r.sku).toLowerCase().includes(s))&&(!f||invSt(r)===f));
-  const el=document.getElementById('fg-list');
   if(!rows.length){el.innerHTML='<div class="empty">無符合項目</div>';return;}
   el.innerHTML=rows.map(r=>`<div class="list-row">
     <div class="list-left">
@@ -1364,10 +1364,10 @@ function renderFG(){
   </div>`).join('');
   const val=fgData.reduce((a,r)=>a+r.qty*r.price,0);
   const lc=fgData.filter(r=>invSt(r)!=='正常').length;
-  document.getElementById('inv-fsku').textContent=fgData.length;
-  document.getElementById('inv-fval').textContent=fmt(val);
+  const fsku=document.getElementById('inv-fsku');if(fsku)fsku.textContent=fgData.length;
+  const fval=document.getElementById('inv-fval');if(fval)fval.textContent=fmt(val);
   const wb=document.getElementById('fg-wb');
-  wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';
+  if(wb){wb.textContent=lc>0?`${lc} 項預警`:'';wb.style.display=lc>0?'':'none';}
   updateDash();
 }
 
