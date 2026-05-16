@@ -762,7 +762,7 @@ function showLoginScreen(){document.getElementById('login-screen').style.display
 function hideLoginScreen(){document.getElementById('login-screen').style.display='none';document.getElementById('app-wrap').style.display='block';}
 
 function signInWithGoogle(){
-  const redirectTo=encodeURIComponent('https://sher-holmes.github.io/ERP/');
+  const redirectTo=encodeURIComponent('https://sher-holmes.github.io/FINANCE.ERP/');
   window.location.href=`${SB_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectTo}`;
 }
 
@@ -781,7 +781,7 @@ async function sendOTP(){
   try{
     const allowed=await checkEmailWhitelist(email);
     if(!allowed){showLoginError('此 Email 未獲授權，請聯繫管理員');btn.textContent='寄送登入連結';btn.disabled=false;return;}
-    const redirectTo='https://sher-holmes.github.io/ERP/';
+    const redirectTo='https://sher-holmes.github.io/FINANCE.ERP/';
     const r=await fetch(`${SB_URL}/auth/v1/magiclink?redirect_to=${encodeURIComponent(redirectTo)}`,{
       method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})
     });
