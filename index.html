@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -11,7 +10,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <link rel="manifest" href="manifest.json">
-<title>FINANCE ERP</title>
+<title>ERP 管理系統</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -423,7 +422,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
 <div class="sheet-wrap" id="arm">
   <div class="sheet">
     <div class="sheet-hd"><h2>新增應收帳款</h2><button class="close-btn" onclick="hideM('arm')">✕</button></div>
-    <div class="form-group"><label>客戶名稱</label><input type="text" id="ar-cl"></div>
+    <div class="form-group">
+      <label>客戶名稱</label>
+      <div style="display:flex;gap:8px;">
+        <select id="ar-cl" style="flex:1;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238e8e93\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 10px center;min-height:46px;">
+          <option value="">選擇客戶...</option>
+        </select>
+        <button onclick="showM('custm')" style="flex-shrink:0;width:46px;height:46px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt2);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;" title="管理客戶">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ar-am"></div>
       <div class="form-group"><label>狀態</label><select id="ar-st"><option>待收款</option><option>已收款</option></select></div>
@@ -438,11 +447,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
   </div>
 </div>
 
+<!-- 客戶名單 Modal -->
+<div class="sheet-wrap" id="custm">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>客戶名單</h2><button class="close-btn" onclick="hideM('custm')">✕</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input type="text" id="cust-new" placeholder="輸入客戶名稱..." style="flex:1;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);" onkeydown="if(event.key==='Enter')addCustomer()">
+      <button onclick="addCustomer()" class="ibt edit" style="flex-shrink:0;">${ICON_PLUS}</button>
+    </div>
+    <div id="cust-list"></div>
+    <button class="btn-full btn-secondary" onclick="hideM('custm')" style="margin-top:14px;">完成</button>
+  </div>
+</div>
+
 <!-- 應付 Modal -->
 <div class="sheet-wrap" id="apm">
   <div class="sheet">
     <div class="sheet-hd"><h2>新增應付帳款</h2><button class="close-btn" onclick="hideM('apm')">✕</button></div>
-    <div class="form-group"><label>供應商名稱</label><input type="text" id="ap-vn"></div>
+    <div class="form-group">
+      <label>供應商名稱</label>
+      <select id="ap-vn" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238e8e93\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 10px center;min-height:46px;">
+        <option value="">選擇供應商...</option>
+      </select>
+    </div>
     <div class="form-row">
       <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ap-am"></div>
       <div class="form-group"><label>狀態</label><select id="ap-st"><option>待付款</option><option>已付款</option></select></div>
@@ -515,6 +542,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-se
     <div class="cal-grid" id="cal-grid">
       <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>
     </div>
+  </div>
+</div>
+
+<!-- AR 編輯 Modal -->
+<div class="sheet-wrap" id="ar-edit-m">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>編輯應收帳款</h2><button class="close-btn" onclick="hideM('ar-edit-m')">✕</button></div>
+    <div class="form-group">
+      <label>客戶名稱</label>
+      <select id="are-cl" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238e8e93\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 10px center;min-height:46px;">
+        <option value="">選擇客戶...</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>金額 (TWD)</label><input type="number" id="are-am"></div>
+      <div class="form-group"><label>狀態</label><select id="are-st"><option>待收款</option><option>已收款</option><option>逾期</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>發票日期</label><button type="button" class="date-input-btn" id="are-id-btn" onclick="openCal('are-id-btn','are-id-val',updateArePrev)"><span id="are-id-display">選擇日期</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button><input type="hidden" id="are-id-val"></div>
+      <div class="form-group"><label>收款天數</label><select id="are-terms" onchange="updateArePrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
+    <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="are-prev">—</div></div></div>
+    <button class="btn-full btn-primary" onclick="saveEditAR()" style="margin-top:14px;">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('ar-edit-m')">取消</button>
+  </div>
+</div>
+
+<!-- AP 編輯 Modal -->
+<div class="sheet-wrap" id="ap-edit-m">
+  <div class="sheet">
+    <div class="sheet-hd"><h2>編輯應付帳款</h2><button class="close-btn" onclick="hideM('ap-edit-m')">✕</button></div>
+    <div class="form-group">
+      <label>供應商名稱</label>
+      <select id="ape-vn" style="width:100%;font-size:15px;padding:10px 12px;border-radius:var(--rad);border:0.5px solid var(--bdr2);background:var(--bg2);color:var(--txt);padding-right:36px;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238e8e93\' stroke-width=\'2.5\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 10px center;min-height:46px;">
+        <option value="">選擇供應商...</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>金額 (TWD)</label><input type="number" id="ape-am"></div>
+      <div class="form-group"><label>狀態</label><select id="ape-st"><option>待付款</option><option>已付款</option><option>逾期</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>收票日期</label><button type="button" class="date-input-btn" id="ape-id-btn" onclick="openCal('ape-id-btn','ape-id-val',updateApePrev)"><span id="ape-id-display">選擇日期</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button><input type="hidden" id="ape-id-val"></div>
+      <div class="form-group"><label>付款天數</label><select id="ape-terms" onchange="updateApePrev()"><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="120">120 天</option></select></div>
+    </div>
+    <div class="due-box"><div><div class="due-lbl">到期日（當月25日）</div><div class="due-val" id="ape-prev">—</div></div></div>
+    <button class="btn-full btn-primary" onclick="saveEditAP()" style="margin-top:14px;">儲存</button>
+    <button class="btn-full btn-secondary" onclick="hideM('ap-edit-m')">取消</button>
   </div>
 </div>
 
@@ -915,6 +990,8 @@ async function loadAll(){
   showLoading(false);
   renderSupp();renderAR();renderAP();renderRAW();renderFG();
   renderARChart();
+  renderSuppDropdown();
+  loadCustomers();
 }
 
 function showToast(msg){
@@ -960,6 +1037,93 @@ function showConfirm({title,msg,type,okLabel,cb}){
 }
 function confirmOK(){document.getElementById('confirm-dialog').style.display='none';if(_confirmCB)_confirmCB();_confirmCB=null;}
 function confirmCancel(){document.getElementById('confirm-dialog').style.display='none';_confirmCB=null;}
+
+// ── 應收編輯 ──
+let _editARId=null;
+function updateArePrev(){
+  const inv=document.getElementById('are-id-val').value;
+  const terms=document.getElementById('are-terms').value;
+  document.getElementById('are-prev').textContent=inv?calcDue25(inv,terms):'請先選擇日期';
+}
+function openEditAR(id){
+  const r=arData.find(r=>r.id===id);if(!r)return;
+  _editARId=id;
+  // 填入客戶下拉
+  const sel=document.getElementById('are-cl');
+  sel.innerHTML='<option value="">選擇客戶...</option>';
+  custData.forEach(c=>{const o=document.createElement('option');o.value=c.name;o.textContent=c.name;sel.appendChild(o);});
+  // 若原始名稱不在清單，也加入
+  if(!custData.find(c=>c.name===r.name)){const o=document.createElement('option');o.value=r.name;o.textContent=r.name;sel.appendChild(o);}
+  sel.value=r.name;
+  document.getElementById('are-am').value=r.amount;
+  document.getElementById('are-st').value=r.status;
+  document.getElementById('are-terms').value=r.terms;
+  document.getElementById('are-id-val').value=r.invDate;
+  const btn=document.getElementById('are-id-btn');
+  btn.querySelector('span').textContent=r.invDate||'選擇日期';
+  btn.classList.toggle('empty',!r.invDate);
+  document.getElementById('are-prev').textContent=r.dueDate||'—';
+  showM('ar-edit-m');
+}
+function saveEditAR(){
+  const cl=document.getElementById('are-cl').value.trim();
+  const am=parseFloat(document.getElementById('are-am').value)||0;
+  if(!cl){showToast('請選擇客戶');return;}
+  if(!am){showToast('請輸入金額');return;}
+  showConfirm({title:'儲存變更',msg:`確定要更新「${cl}」的帳款資料？`,type:'edit',okLabel:'儲存',cb:async()=>{
+    const idx=arData.findIndex(r=>r.id===_editARId);
+    if(idx>-1){
+      const invDate=document.getElementById('are-id-val').value||arData[idx].invDate;
+      const terms=parseInt(document.getElementById('are-terms').value);
+      arData[idx]={...arData[idx],name:cl,amount:am,status:document.getElementById('are-st').value,invDate,terms,dueDate:calcDue25(invDate,terms)};
+      await dbSaveAR(arData[idx]);
+    }
+    hideM('ar-edit-m');renderAR();
+  }});
+}
+
+// ── 應付編輯 ──
+let _editAPId=null;
+function updateApePrev(){
+  const inv=document.getElementById('ape-id-val').value;
+  const terms=document.getElementById('ape-terms').value;
+  document.getElementById('ape-prev').textContent=inv?calcDue25(inv,terms):'請先選擇日期';
+}
+function openEditAP(id){
+  const r=apData.find(r=>r.id===id);if(!r)return;
+  _editAPId=id;
+  // 填入供應商下拉
+  const sel=document.getElementById('ape-vn');
+  sel.innerHTML='<option value="">選擇供應商...</option>';
+  suppData.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);});
+  if(!suppData.find(s=>s.name===r.name)){const o=document.createElement('option');o.value=r.name;o.textContent=r.name;sel.appendChild(o);}
+  sel.value=r.name;
+  document.getElementById('ape-am').value=r.amount;
+  document.getElementById('ape-st').value=r.status;
+  document.getElementById('ape-terms').value=r.terms;
+  document.getElementById('ape-id-val').value=r.invDate;
+  const btn=document.getElementById('ape-id-btn');
+  btn.querySelector('span').textContent=r.invDate||'選擇日期';
+  btn.classList.toggle('empty',!r.invDate);
+  document.getElementById('ape-prev').textContent=r.dueDate||'—';
+  showM('ap-edit-m');
+}
+function saveEditAP(){
+  const vn=document.getElementById('ape-vn').value.trim();
+  const am=parseFloat(document.getElementById('ape-am').value)||0;
+  if(!vn){showToast('請選擇供應商');return;}
+  if(!am){showToast('請輸入金額');return;}
+  showConfirm({title:'儲存變更',msg:`確定要更新「${vn}」的帳款資料？`,type:'edit',okLabel:'儲存',cb:async()=>{
+    const idx=apData.findIndex(r=>r.id===_editAPId);
+    if(idx>-1){
+      const invDate=document.getElementById('ape-id-val').value||apData[idx].invDate;
+      const terms=parseInt(document.getElementById('ape-terms').value);
+      apData[idx]={...apData[idx],name:vn,amount:am,status:document.getElementById('ape-st').value,invDate,terms,dueDate:calcDue25(invDate,terms)};
+      await dbSaveAP(apData[idx]);
+    }
+    hideM('ap-edit-m');renderAP();
+  }});
+}
 
 // ── 供應商刪除 ──
 function delSupp(id){
@@ -1118,6 +1282,7 @@ function renderSupp(){
   document.getElementById('supp-total').textContent=suppData.length;
   document.getElementById('supp-overdue').textContent=suppData.filter(r=>apData.some(a=>a.name===r.name&&a.status==='逾期')).length;
   updateDash();
+  renderSuppDropdown();
 }
 
 function renderAR(){
@@ -1156,6 +1321,7 @@ function renderAR(){
           <div class="list-amt">${fmt(r.amount)}</div>
           ${bdg(r.status)}
           <div class="acts" style="margin-top:2px;">
+            <button class="ibt" style="background:var(--bg2);border-color:var(--bdr);" onclick="openEditAR('${r.id}')">${ICON_EDIT}</button>
             <button class="ibt edit" onclick="markAR('${r.id}')">${ICON_CHECK}</button>
             <button class="ibt del" onclick="delAR('${r.id}')">${ICON_TRASH}</button>
           </div>
@@ -1254,6 +1420,7 @@ function renderAP(){
           <div class="list-amt">${fmt(r.amount)}</div>
           ${bdg(r.status)}
           <div class="acts" style="margin-top:2px;">
+            <button class="ibt" style="background:var(--bg2);border-color:var(--bdr);" onclick="openEditAP('${r.id}')">${ICON_EDIT}</button>
             <button class="ibt edit" onclick="markAP('${r.id}')">${ICON_CHECK}</button>
             <button class="ibt del" onclick="delAP('${r.id}')">${ICON_TRASH}</button>
           </div>
@@ -1535,14 +1702,16 @@ async function saveSupp(){
 }
 async function addAR(){
   const cl=document.getElementById('ar-cl').value.trim(),am=parseFloat(document.getElementById('ar-am').value)||0;
-  if(!cl||!am)return;
+  if(!cl){showToast('請選擇客戶');return;}
+  if(!am){showToast('請輸入金額');return;}
   const invDate=document.getElementById('ar-id-val').value||'—';
   const terms=parseInt(document.getElementById('ar-terms').value);
   const row={id:String(seqs.ar++).padStart(3,'0'),name:cl,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ar-st').value};
   arData.push(row);
   await dbSaveAR(row);await saveSeq('ar');
   hideM('arm');
-  document.getElementById('ar-id-btn').querySelector('span').textContent='選擇日期';
+  document.getElementById('ar-cl').value='';
+  document.getElementById('ar-am').value='';
   document.getElementById('ar-id-btn').classList.add('empty');
   document.getElementById('ar-id-val').value='';
   document.getElementById('ar-prev').textContent='—';
@@ -1550,7 +1719,8 @@ async function addAR(){
 }
 async function addAP(){
   const vn=document.getElementById('ap-vn').value.trim(),am=parseFloat(document.getElementById('ap-am').value)||0;
-  if(!vn||!am)return;
+  if(!vn){showToast('請選擇供應商');return;}
+  if(!am){showToast('請輸入金額');return;}
   const invDate=document.getElementById('ap-id-val').value||'—';
   const terms=parseInt(document.getElementById('ap-terms').value);
   const row={id:String(seqs.ap++).padStart(3,'0'),name:vn,invDate,dueDate:calcDue25(invDate,terms),terms,amount:am,status:document.getElementById('ap-st').value};
@@ -1606,7 +1776,85 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js');
 }
 
-// ── 基本開銷 ──
+// ── 客戶名單 ──
+let custData=[];
+
+async function loadCustomers(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/customers?select=*&order=name`,{headers:sbHeaders()});
+    if(!r.ok)return;
+    custData=await r.json();
+    renderCustDropdown();
+    renderCustList();
+  }catch(e){console.error('loadCustomers error',e);}
+}
+
+function renderCustDropdown(){
+  const sel=document.getElementById('ar-cl');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">選擇客戶...</option>';
+  custData.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.name;o.textContent=c.name;
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+}
+
+function renderSuppDropdown(){
+  const sel=document.getElementById('ap-vn');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">選擇供應商...</option>';
+  suppData.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.name;o.textContent=s.name;
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+}
+
+function renderCustList(){
+  const el=document.getElementById('cust-list');
+  if(!el)return;
+  if(!custData.length){el.innerHTML='<div class="empty">尚無客戶</div>';return;}
+  el.innerHTML=custData.map(c=>`<div class="list-row" style="padding:10px 0;">
+    <div class="list-left"><div class="list-name">${c.name}</div></div>
+    <div class="list-right">
+      <button class="ibt del" onclick="delCustomer('${c.id}')">${ICON_TRASH}</button>
+    </div>
+  </div>`).join('');
+}
+
+async function addCustomer(){
+  const nm=document.getElementById('cust-new').value.trim();
+  if(!nm)return;
+  const id=String(Date.now());
+  const row={id,name:nm};
+  custData.push(row);
+  custData.sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant'));
+  try{
+    await fetch(`${SB_URL}/rest/v1/customers`,{
+      method:'POST',
+      headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify(row)
+    });
+  }catch(e){console.error(e);}
+  document.getElementById('cust-new').value='';
+  renderCustDropdown();
+  renderCustList();
+}
+
+function delCustomer(id){
+  const c=custData.find(c=>c.id===id);
+  showConfirm({title:'刪除客戶',msg:`確定要刪除「${c?.name}」？`,type:'del',okLabel:'確定刪除',cb:async()=>{
+    custData=custData.filter(c=>c.id!==id);
+    await sbDelete('customers','id',id);
+    renderCustDropdown();
+    renderCustList();
+  }});
+}
 const EXP_CATS=['廠租','電費','水費','電話費','勞保','健保','勞退'];
 const EXP_COLORS={'廠租':'#0a84ff','電費':'#f5a623','水費':'#30d158','電話費':'#ff6b35','勞保':'#ff3b30','健保':'#ff9f0a','勞退':'#64d2ff'};
 let expData={}; // {year: {month: {cat: amount}}}
